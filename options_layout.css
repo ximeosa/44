@@ -1,0 +1,164 @@
+/* CSS for options.html layout - sidebar and content area */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: var(--theme-bg-primary, #f0f8ff); /* Default from shared or existing options */
+  color: var(--theme-text-primary, #333333);
+  display: flex; /* Make body a flex container for the new structure */
+  min-height: 100vh;
+}
+
+.options-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh; /* Ensure it takes full viewport height */
+}
+
+.sidebar {
+  width: 240px;
+  background-color: var(--theme-bg-secondary, #e9ecef); /* Slightly different from main bg */
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  color: var(--theme-text-primary);
+  border-right: 1px solid var(--theme-border-color, #d3d3d3);
+  height: 100vh; /* Full height */
+  position: fixed; /* Fixed sidebar */
+  top: 0;
+  left: 0;
+  overflow-y: auto; /* Scroll if content overflows */
+}
+
+.sidebar-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--theme-border-color);
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: var(--theme-text-primary);
+}
+
+.sidebar-nav {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: 12px 15px;
+  text-decoration: none;
+  color: var(--theme-link-color, #007bff);
+  border-radius: 4px;
+  margin-bottom: 5px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-weight: 500;
+}
+
+.sidebar-nav li a:hover {
+  background-color: var(--theme-accent-primary, #98fb98);
+  color: var(--theme-button-text, #333); /* Ensure text is readable on accent bg */
+}
+
+.sidebar-nav li a.active {
+  background-color: var(--theme-accent-secondary, #dda0dd); /* A different accent for active */
+  color: var(--theme-button-text, #333);
+  font-weight: bold;
+}
+
+.content-area {
+  flex-grow: 1;
+  padding: 20px 30px; /* More padding for content */
+  margin-left: 240px; /* Account for fixed sidebar width */
+  background-color: var(--theme-bg-primary); /* Main background for content */
+  overflow-y: auto; /* Allow content area to scroll independently */
+}
+
+.content-view {
+  display: none; /* Hidden by default, JS will show active view */
+  animation: fadeInView 0.3s ease-in-out;
+}
+
+.content-view.active {
+  display: block;
+}
+
+@keyframes fadeInView {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Keep original .settings-section styles for now, they are inside options.html <style> */
+/* Ensure titles within content views are styled */
+.content-view > h1, .content-view > .section-title {
+  color: var(--theme-text-primary);
+  border-bottom: 1px solid var(--theme-border-color);
+  padding-bottom: 10px;
+  margin-top: 0; /* Remove top margin for first element in view */
+  margin-bottom: 20px;
+}
+
+/* Adjustments for bookmark lists inside content views */
+.bookmark-list {
+  /* Styles for bookmark lists are mostly in options.html <style> block, which is fine */
+  /* Ensure they take up appropriate space */
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%; /* Full width on small screens */
+    height: auto; /* Auto height */
+    position: static; /* Static position */
+    border-right: none;
+    border-bottom: 1px solid var(--theme-border-color, #d3d3d3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .content-area {
+    margin-left: 0; /* No margin when sidebar is on top */
+    padding: 20px; /* Adjust padding */
+  }
+  .sidebar-nav li {
+    display: inline-block; /* Make nav items inline for a horizontal menu */
+  }
+  .sidebar-nav li a {
+    padding: 10px;
+  }
+  .sidebar-header {
+    text-align: center;
+  }
+}
+
+/* Styling for the Settings view */
+#view-settings .settings-section {
+  background-color: var(--theme-bg-secondary); /* Ensure it has a card-like bg */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--theme-shadow-color);
+}
+
+#view-settings h1 { /* Specifically target the H1 in settings view */
+  color: var(--theme-text-primary);
+  border-bottom: 1px solid var(--theme-border-color);
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 25px; /* More space after settings title */
+  font-size: 1.8em; /* Make settings title prominent */
+}
+
+/* Ensure bookmark list titles (.section-title) are also well-styled */
+.content-view > .section-title {
+  font-size: 1.5em; /* Slightly smaller than settings H1 */
+  margin-top: 10px; /* Add some space if multiple lists are shown (e.g. 'All') */
+}
+
+/* Refine drag-over style for better visibility with themes */
+.bookmark-item.drag-over {
+  background-color: var(--theme-accent-primary) !important; /* Use important to ensure override */
+  opacity: 0.8;
+  outline: 2px dashed var(--theme-accent-secondary);
+}

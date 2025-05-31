@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Advanced Bookmarker - Options</title>
+  <title>Advanced Bookmarker - My Bookmarks</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="shared_styles.css">
+  <!-- Existing styles from options.html, contains theme variables and bookmark item styles -->
   <style>
     :root {
       /* Default theme (Light Pastel) */
@@ -263,55 +266,86 @@
     }
 
   </style>
+  <link rel="stylesheet" href="options_layout.css"> <!-- New CSS for sidebar layout -->
 </head>
-<body>
-  <div class="container">
-    <h1>My Bookmarks</h1>
+<body data-theme="light_pastel"> <!-- Default theme, options.js will manage this -->
 
-    <div class="settings-section">
-      <h2>Settings</h2>
-      <div class="controls">
-        <button id="exportBtn">Export Bookmarks</button>
-        <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
-        <input type="file" id="importFile" accept=".json">
-        <span id="importStatus"></span>
-        
-        <div class="setting-toggle">
-          <label for="dragDropToggle">Enable Drag & Drop Reordering:</label>
-          <input type="checkbox" id="dragDropToggle">
+  <div class="options-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>Menu</h2>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="#" data-view="view-all">All Bookmarks</a></li>
+        <li><a href="#" data-view="view-websites">Websites & Pages</a></li>
+        <li><a href="#" data-view="view-videos">YouTube Videos</a></li>
+        <li><a href="#" data-view="view-channels">YouTube Channels</a></li>
+        <li><a href="#" data-view="view-selections">Selections & Notes</a></li>
+        <li><a href="#" data-view="view-settings">Settings</a></li>
+      </ul>
+    </nav>
+
+    <main class="content-area">
+      <!-- Settings View -->
+      <div id="view-settings" class="content-view">
+        <div class="settings-section"> <!-- Keep original class for styling continuity -->
+          <h1>Settings</h1>
+          <div class="controls">
+            <button id="exportBtn">Export Bookmarks</button>
+            <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
+            <input type="file" id="importFile" accept=".json">
+            <span id="importStatus"></span>
+            <div class="setting-toggle">
+              <label for="dragDropToggle">Enable Drag & Drop Reordering:</label>
+              <input type="checkbox" id="dragDropToggle">
+            </div>
+          </div>
+          <div class="theme-selector">
+            <label for="themeSelect">Select Theme:</label>
+            <select id="themeSelect">
+              <option value="light_pastel">Light (Pastel Green/Purple)</option>
+              <option value="dark_mode">Dark (Blue/Black)</option>
+              <option value="system_default">System Default</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="theme-selector">
-        <label for="themeSelect">Select Theme:</label>
-        <select id="themeSelect">
-          <option value="light_pastel">Light (Pastel Green/Purple)</option>
-          <option value="dark_mode">Dark (Blue/Black)</option>
-          <option value="system_default">System Default</option>
-        </select>
+
+      <!-- Websites & Pages View (Combined with "All" logic later in JS) -->
+      <div id="view-websites" class="content-view">
+        <h2 class="section-title">Websites & Pages</h2>
+        <ul id="websitesList" class="bookmark-list">
+          <!-- Bookmarks will be dynamically inserted here by options.js -->
+        </ul>
       </div>
-    </div>
 
-    <h2 class="section-title">Websites & Pages</h2>
-    <ul id="websitesList" class="bookmark-list">
-      <li class="bookmark-item">Placeholder for a website bookmark.</li>
-    </ul>
+      <!-- YouTube Videos View (Combined with "All" logic later in JS) -->
+      <div id="view-videos" class="content-view">
+        <h2 class="section-title">YouTube Videos</h2>
+        <ul id="youtubeVideosList" class="bookmark-list">
+          <!-- Bookmarks will be dynamically inserted here -->
+        </ul>
+      </div>
 
-    <h2 class="section-title">YouTube Videos</h2>
-    <ul id="youtubeVideosList" class="bookmark-list">
-      <!-- YouTube Videos will be dynamically inserted here -->
-    </ul>
+      <!-- YouTube Channels View (Combined with "All" logic later in JS) -->
+      <div id="view-channels" class="content-view">
+        <h2 class="section-title">YouTube Channels</h2>
+        <ul id="youtubeChannelsList" class="bookmark-list">
+          <!-- Bookmarks will be dynamically inserted here -->
+        </ul>
+      </div>
 
-    <h2 class="section-title">YouTube Channels</h2>
-    <ul id="youtubeChannelsList" class="bookmark-list">
-      <!-- YouTube Channels will be dynamically inserted here -->
-    </ul>
-    
-    <h2 class="section-title">Selections & Notes</h2>
-    <ul id="selectionsList" class="bookmark-list">
-      <li class="bookmark-item">Placeholder for a text selection.</li>
-    </ul>
+      <!-- Selections & Notes View (Combined with "All" logic later in JS) -->
+      <div id="view-selections" class="content-view">
+        <h2 class="section-title">Selections & Notes</h2>
+        <ul id="selectionsList" class="bookmark-list">
+          <!-- Bookmarks will be dynamically inserted here -->
+        </ul>
+      </div>
 
+    </main>
   </div>
+
   <script src="options.js"></script>
 </body>
 </html>

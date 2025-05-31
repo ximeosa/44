@@ -9,6 +9,56 @@ document.addEventListener('DOMContentLoaded', function() {
   let draggedItem = null; // Added
   let originalBookmarksOrder = []; // Added
 
+  // --- SIDEBAR NAVIGATION LOGIC ---
+  const sidebarNavLinks = document.querySelectorAll('.sidebar-nav a');
+  const contentViews = document.querySelectorAll('.content-area .content-view');
+  const allBookmarkListViews = ['view-websites', 'view-videos', 'view-channels', 'view-selections'];
+
+  function activateView(viewId) {
+    // Deactivate all views and links first
+    contentViews.forEach(view => view.classList.remove('active'));
+    sidebarNavLinks.forEach(link => link.classList.remove('active'));
+
+    if (viewId === 'view-all') {
+      allBookmarkListViews.forEach(id => {
+        const viewElement = document.getElementById(id);
+        if (viewElement) viewElement.classList.add('active');
+      });
+      // Also activate the 'All Bookmarks' link
+      const allBookmarksLink = document.querySelector('.sidebar-nav a[data-view="view-all"]');
+      if (allBookmarksLink) allBookmarksLink.classList.add('active');
+    } else {
+      const targetView = document.getElementById(viewId);
+      if (targetView) {
+        targetView.classList.add('active');
+      }
+      const activeLink = document.querySelector(`.sidebar-nav a[data-view='${viewId}']`);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+    }
+
+    // Persist last active view to localStorage
+    localStorage.setItem('activeOptionsView', viewId);
+  }
+
+  sidebarNavLinks.forEach(link => {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      const viewId = this.getAttribute('data-view');
+      activateView(viewId);
+    });
+  });
+
+  // Load and activate the last active view or default to 'view-all'
+  const lastActiveView = localStorage.getItem('activeOptionsView') || 'view-all';
+  // Ensure this is called after all necessary elements are defined,
+  // and ideally after bookmarks are loaded if view depends on them.
+  // However, for simple view switching, it can be early.
+  // activateView(lastActiveView); // Moved to after initial bookmark load for view integrity.
+  // --- END SIDEBAR NAVIGATION LOGIC ---
+
+
   // Function to update draggable attributes and visual cues (Added)
   function updateDraggableState(enabled) {
     const lists = [websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Updated lists
@@ -262,6 +312,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Sorting will be handled by how items are added/moved.
       // renderBookmarks(data.bookmarks.sort((a,b) => new Date(b.added_date) - new Date(a.added_date)));
       renderBookmarks(data.bookmarks); 
+
+      // Activate the last view AFTER bookmarks are rendered, so all lists are populated for "view-all"
+      activateView(lastActiveView);
     });
   }
   
@@ -331,13 +384,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Initial load
-  loadAndRenderBookmarks();
+  loadAndRenderBookmarks(); // This will also call activateView(lastActiveView) after bookmarks are rendered.
 
   chrome.storage.onChanged.addListener(function(changes, namespace) {
     if (namespace === 'local' && changes.bookmarks) {
       console.log('Bookmarks changed in storage, reloading options page list.');
       // The renderBookmarks function is called, which will reapply D&D attributes
-      loadAndRenderBookmarks();
+      loadAndRenderBookmarks(); // This will also call activateView(lastActiveView) after bookmarks are rendered.
     }
     // If only D&D setting changes, no need to reload all bookmarks,
     // but updateDraggableState has already handled it.
@@ -462,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
               importStatus.textContent = message;
               console.log(message);
               alert(message);
-              loadAndRenderBookmarks(); // Refresh the displayed list
+              // loadAndRenderBookmarks(); // Already called by storage.onChanged if successful
             }
             event.target.value = ''; // Reset file input
           });

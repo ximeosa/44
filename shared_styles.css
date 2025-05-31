@@ -1,0 +1,61 @@
+/* Shared Styles - Primarily for Theme Variables */
+
+/* Default Dark Theme Variables (Popup) */
+:root {
+  --popup-bg-color: #141414; /* Netflix dark background */
+  --popup-text-color: #ffffff;
+  --popup-header-color: #ffffff;
+
+  --popup-button-bg-color: #333333; /* Darker gray for buttons */
+  --popup-button-text-color: #ffffff;
+  --popup-button-border-color: #555555;
+  --popup-button-hover-bg-color: #e50914; /* Netflix Red for hover/accent */
+  --popup-button-hover-border-color: #e50914;
+  --popup-button-active-bg-color: #b20710; /* Darker red for active */
+
+  --popup-button-disabled-bg-color: #222222;
+  --popup-button-disabled-text-color: #666666;
+  --popup-button-disabled-border-color: #444444;
+
+  --popup-status-text-color: #aaaaaa;
+  --popup-footer-border-color: #333333;
+  --popup-link-color: #88c0f0; /* Light blue for links */
+  --popup-link-hover-color: #a9d4f5;
+
+  --popup-border-radius: 6px; /* Slightly less rounded for a sharper look */
+  --popup-button-border-radius: 4px; /* Consistent rounded buttons */
+}
+
+/* Variables for Options Page (can be same or different) */
+/* Based on existing options.js dark_mode, but consolidated here for potential sharing */
+body[data-theme="dark_mode"] {
+  --theme-bg-primary: #0a192f;    /* Dark blue/black background */
+  --theme-bg-secondary: #172a45;  /* Card backgrounds - slightly lighter dark blue */
+  --theme-text-primary: #e6f1ff;  /* Light text for readability */
+  --theme-text-secondary: #a8b2d1;/* Subdued light text */
+  --theme-accent-primary: #00a8ff; /* Bright blue for accents */
+  --theme-accent-secondary: #304ffe;/* Another blue for other accents */
+  --theme-border-color: #303f5a;  /* Darker border */
+  --theme-shadow-color: rgba(0,0,0,0.3); /* Darker shadow */
+  --theme-button-bg: #233554;
+  --theme-button-text: #e6f1ff;
+  --theme-button-hover-bg: #304a6d;
+  --theme-link-color: #88ccff; /* Lighter blue for links */
+}
+
+body[data-theme="light_pastel"] {
+  --theme-bg-primary: #f0f8ff;
+  --theme-bg-secondary: #ffffff;
+  --theme-text-primary: #333333;
+  --theme-text-secondary: #555555;
+  --theme-accent-primary: #98fb98;
+  --theme-accent-secondary: #dda0dd;
+  --theme-border-color: #d3d3d3;
+  --theme-shadow-color: rgba(0,0,0,0.1);
+  --theme-button-bg: #e9ecef;
+  --theme-button-text: #495057;
+  --theme-button-hover-bg: #dee2e6;
+  --theme-link-color: #663399;
+}
+
+/* Add more shared styles or utility classes here if needed */
