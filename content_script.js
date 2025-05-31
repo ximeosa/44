@@ -199,7 +199,7 @@ function extractInitialPageInfo() {
                       if (!currentResultToUpdate.debug_cs_channelNameContent) currentResultToUpdate.debug_cs_channelNameContent = currentResultToUpdate.extractedChannelTitle;
                       console.log('[CS_ExtractInfo_VideoPage_P1Func] Channel Title extracted from link.textContent. Title:', currentResultToUpdate.extractedChannelTitle);
                   } else {
-                       console.log('[CS_ExtractInfo_VideoPage_P1Func] link.textContent ("', linkText ,'") was too long or seemed non-descriptive, not used for title.');
+                       console.log('[CS_ExtractInfo_VideoPage_P1Func] link.textContent was too long or seemed non-descriptive. Value:', linkText);
                   }
               }
 
