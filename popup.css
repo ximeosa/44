@@ -1,0 +1,73 @@
+/* Basic Reset */
+body, h1, button, p, div {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1f1f1f;
+    color: #f0f0f0;
+    width: 300px;
+    padding: 15px;
+    border-radius: 8px; /* Rounded corners for the popup body */
+}
+
+h1 {
+    font-size: 1.2em;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+button {
+    background-color: #333333;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px; /* Rounded corners for buttons */
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #555555;
+}
+
+button:disabled {
+    background-color: #2a2a2a;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+#statusMessage {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+    min-height: 20px; /* Reserve space to prevent layout shifts */
+    color: #cccccc;
+}
+
+.footer-actions {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.footer-actions a {
+    color: #77aaff;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.footer-actions a:hover {
+    text-decoration: underline;
+}

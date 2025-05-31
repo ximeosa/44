@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const bookmarkPageBtn = document.getElementById('bookmarkPageBtn');
+  const bookmarkWebpageBtn = document.getElementById('bookmarkWebpageBtn'); // Changed ID
   const bookmarkVideoBtn = document.getElementById('bookmarkVideoBtn');
   const bookmarkChannelBtn = document.getElementById('bookmarkChannelBtn');
   const bookmarkWebsiteBtn = document.getElementById('bookmarkWebsiteBtn');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
       updateButtonStates(currentTabInfo.url);
     } else {
       statusMessage.textContent = 'Error: Could not get tab info.';
-      [bookmarkPageBtn, bookmarkVideoBtn, bookmarkChannelBtn, bookmarkWebsiteBtn].forEach(b => b.disabled = true);
+      [bookmarkWebpageBtn, bookmarkVideoBtn, bookmarkChannelBtn, bookmarkWebsiteBtn].forEach(b => b.disabled = true); // Changed ID
     }
   });
 
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     );
   }
 
-  bookmarkPageBtn.addEventListener('click', () => triggerBookmarkProcess('page'));
+  bookmarkWebpageBtn.addEventListener('click', () => triggerBookmarkProcess('page')); // Changed ID and type if necessary
   bookmarkVideoBtn.addEventListener('click', () => triggerBookmarkProcess('youtube_video'));
   bookmarkChannelBtn.addEventListener('click', () => triggerBookmarkProcess('youtube_channel'));
   bookmarkWebsiteBtn.addEventListener('click', () => triggerBookmarkProcess('website'));

@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Sidebar Navigation
+  const sidebarLinks = document.querySelectorAll('.sidebar nav a');
+  const contentSections = document.querySelectorAll('.content-section');
+
+  // Bookmark Lists
   const websitesList = document.getElementById('websitesList');
-  // const youtubeList = document.getElementById('youtubeList'); // Remove this
   const youtubeVideosList = document.getElementById('youtubeVideosList');
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
   const selectionsList = document.getElementById('selectionsList');
@@ -261,9 +265,40 @@ document.addEventListener('DOMContentLoaded', function() {
       // For now, removing the sort for D&D to work correctly with array indices.
       // Sorting will be handled by how items are added/moved.
       // renderBookmarks(data.bookmarks.sort((a,b) => new Date(b.added_date) - new Date(a.added_date)));
-      renderBookmarks(data.bookmarks); 
+  renderBookmarks(data.bookmarks);
     });
   }
+
+  // --- SIDEBAR NAVIGATION LOGIC ---
+  function activateSection(targetId) {
+    contentSections.forEach(section => {
+      if (section.id === targetId) {
+        section.classList.add('active');
+      } else {
+        section.classList.remove('active');
+      }
+    });
+
+    sidebarLinks.forEach(link => {
+      if (link.dataset.target === targetId) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+    // Persist last active section
+    localStorage.setItem('lastActiveSection', targetId);
+  }
+
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.dataset.target;
+      activateSection(targetId);
+    });
+  });
+
+  // --- END SIDEBAR NAVIGATION LOGIC ---
   
   function escapeHTML(str) {
     if (str === null || str === undefined) return '';
@@ -327,11 +362,23 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.storage.local.get({ dragDropEnabledSetting: false }, function(data) {
     dragDropEnabled = data.dragDropEnabledSetting;
     dragDropToggle.checked = dragDropEnabled;
-    updateDraggableState(dragDropEnabled); 
+    // updateDraggableState is called within loadAndRenderBookmarks,
+    // or after initial render if that happens first.
+    // No need to call it here if loadAndRenderBookmarks will handle it.
   });
 
-  // Initial load
-  loadAndRenderBookmarks();
+  // Initial load & Sidebar Activation
+  loadAndRenderBookmarks(); // This will also call updateDraggableState
+
+  const lastActiveSection = localStorage.getItem('lastActiveSection');
+  if (lastActiveSection && document.getElementById(lastActiveSection)) {
+    activateSection(lastActiveSection);
+  } else {
+    activateSection('websitesSection'); // Default to websitesSection
+  }
+  // Ensure D&D state is applied after initial render and section activation
+  // because updateDraggableState relies on lists being populated.
+  // updateDraggableState(dragDropEnabled); // This is called inside renderBookmarks
 
   chrome.storage.onChanged.addListener(function(changes, namespace) {
     if (namespace === 'local' && changes.bookmarks) {
@@ -510,15 +557,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Load and apply saved theme on startup
   chrome.storage.local.get({ selectedTheme: 'light_pastel' }, function(data) { // Default to light_pastel
-    applyTheme(data.selectedTheme);
+    // Ensure themeSelect element exists before trying to set its value or call applyTheme
+    if (themeSelect) {
+      applyTheme(data.selectedTheme);
+    } else {
+      console.warn("themeSelect element not found during initial theme load.");
+    }
   });
   
   // Optional: Listen for system theme changes to dynamically update if "System Default" is selected
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-      // Only re-apply if 'system_default' is the *selected* option in the dropdown.
-      if (themeSelect.value === 'system_default') {
-          console.log("System theme changed, re-applying system_default.");
-          applyTheme('system_default'); // Re-apply to pick up new system theme
-      }
-  });
+  if (window.matchMedia) { // Check if matchMedia is supported
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        // Only re-apply if 'system_default' is the *selected* option in the dropdown.
+        if (themeSelect && themeSelect.value === 'system_default') {
+            console.log("System theme changed, re-applying system_default.");
+            applyTheme('system_default'); // Re-apply to pick up new system theme
+        }
+    });
+  }
 });
