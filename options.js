@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const websitesList = document.getElementById('websitesList');
+  const websiteDomainList = document.getElementById('websiteDomainList'); // Renamed
+  const webpageSpecificList = document.getElementById('webpageSpecificList'); // New list
   // const youtubeList = document.getElementById('youtubeList'); // Remove this
   const youtubeVideosList = document.getElementById('youtubeVideosList');
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
-  const selectionsList = document.getElementById('selectionsList');
+  // const selectionsList = document.getElementById('selectionsList'); // Removed
   const dragDropToggle = document.getElementById('dragDropToggle'); // Added
   let dragDropEnabled = false; // Added
   let draggedItem = null; // Added
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- SIDEBAR NAVIGATION LOGIC ---
   const sidebarNavLinks = document.querySelectorAll('.sidebar-nav a');
   const contentViews = document.querySelectorAll('.content-area .content-view');
-  const allBookmarkListViews = ['view-websites', 'view-videos', 'view-channels', 'view-selections'];
+  const allBookmarkListViews = ['view-channels', 'view-videos', 'view-website-domain', 'view-webpage-specific']; // Updated order, removed selections
 
   function activateView(viewId) {
     // Deactivate all views and links first
@@ -50,8 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Load and activate the last active view or default to 'view-all'
-  const lastActiveView = localStorage.getItem('activeOptionsView') || 'view-all';
+  // Load and activate the last active view or default to 'view-videos'
+  const lastActiveView = localStorage.getItem('activeOptionsView') || 'view-videos';
   // Ensure this is called after all necessary elements are defined,
   // and ideally after bookmarks are loaded if view depends on them.
   // However, for simple view switching, it can be early.
@@ -61,9 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to update draggable attributes and visual cues (Added)
   function updateDraggableState(enabled) {
-    const lists = [websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Updated lists
+    const lists = [websiteDomainList, webpageSpecificList, youtubeVideosList, youtubeChannelsList]; // Updated lists
     lists.forEach(list => {
-      if (enabled) {
+      if (list && enabled) { // Added null check for list
         list.classList.add('dnd-enabled');
       } else {
         list.classList.remove('dnd-enabled');
@@ -267,39 +268,31 @@ document.addEventListener('DOMContentLoaded', function() {
     return item;
   }
 
-  // Function to render bookmarks to their respective lists
+  // Updated renderBookmarks to handle new lists and remove selections
   function renderBookmarks(bookmarks) {
-    // Clear existing placeholder or old bookmarks
-    websitesList.innerHTML = '';
-    youtubeVideosList.innerHTML = ''; // New list
-    youtubeChannelsList.innerHTML = ''; // New list
-    selectionsList.innerHTML = '';
+    websiteDomainList.innerHTML = '';
+    webpageSpecificList.innerHTML = '';
+    youtubeVideosList.innerHTML = '';
+    youtubeChannelsList.innerHTML = '';
+    // selectionsList.innerHTML = ''; // Removed
 
-    if (bookmarks.length === 0) {
-        websitesList.innerHTML = '<li class="empty-list-placeholder">No website bookmarks yet.</li>';
-        youtubeVideosList.innerHTML = '<li class="empty-list-placeholder">No YouTube video bookmarks yet.</li>'; // New list
-        youtubeChannelsList.innerHTML = '<li class="empty-list-placeholder">No YouTube channel bookmarks yet.</li>'; // New list
-        selectionsList.innerHTML = '<li class="empty-list-placeholder">No selections bookmarked yet.</li>';
-        // Still call addListEventListeners to ensure D&D listeners are on the empty lists
-        // if one list becomes empty after a delete.
-        // updateDraggableState and addListEventListeners are called after this block regardless
-    }
-
+    let countWebsiteDomain = 0, countWebpageSpecific = 0, countVideos = 0, countChannels = 0;
     bookmarks.forEach(bookmark => {
       const bookmarkElement = createBookmarkElement(bookmark);
-      if (bookmark.type === 'youtube_video') {
-        youtubeVideosList.appendChild(bookmarkElement); // Changed
-      } else if (bookmark.type === 'youtube_channel') {
-        youtubeChannelsList.appendChild(bookmarkElement); // Changed
-      } else if (bookmark.type === 'selection') {
-        selectionsList.appendChild(bookmarkElement);
-      } else { // 'page' and 'website' types
-        websitesList.appendChild(bookmarkElement);
-      }
+      if (bookmark.type === 'youtube_video') { youtubeVideosList.appendChild(bookmarkElement); countVideos++; }
+      else if (bookmark.type === 'youtube_channel') { youtubeChannelsList.appendChild(bookmarkElement); countChannels++; }
+      else if (bookmark.type === 'website') { websiteDomainList.appendChild(bookmarkElement); countWebsiteDomain++; } // Goes to websiteDomainList
+      else if (bookmark.type === 'page') { webpageSpecificList.appendChild(bookmarkElement); countWebpageSpecific++; }    // Goes to webpageSpecificList
+      // else if (bookmark.type === 'selection') { selectionsList.appendChild(bookmarkElement); } // Removed
     });
-    
-    updateDraggableState(dragDropEnabled); 
-    addListEventListeners(); 
+
+    if (countWebsiteDomain === 0) websiteDomainList.innerHTML = '<li class="empty-list-placeholder">No website domain bookmarks yet.</li>';
+    if (countWebpageSpecific === 0) webpageSpecificList.innerHTML = '<li class="empty-list-placeholder">No specific page bookmarks yet.</li>';
+    if (countVideos === 0) youtubeVideosList.innerHTML = '<li class="empty-list-placeholder">No YouTube video bookmarks yet.</li>';
+    if (countChannels === 0) youtubeChannelsList.innerHTML = '<li class="empty-list-placeholder">No YouTube channel bookmarks yet.</li>';
+
+    updateDraggableState(dragDropEnabled);
+    addListEventListeners();
   }
 
   // Load bookmarks from storage and render them
@@ -346,8 +339,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Renamed and expanded function (Modified)
   function addListEventListeners() {
-    const lists = [websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Updated lists
+    const lists = [websiteDomainList, webpageSpecificList, youtubeVideosList, youtubeChannelsList]; // Updated lists
     lists.forEach(list => {
+      if (!list) return; // Add null check for safety
       // Delete listener (event delegation)
       // Remove first to prevent duplicates if this function is ever called multiple times on the same list
       list.removeEventListener('click', handleDeleteBookmark); 

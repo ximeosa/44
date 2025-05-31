@@ -68,19 +68,43 @@ function extractInitialPageInfo() {
         currentResultToUpdate.debug_cs_pageTitle = currentResultToUpdate.pageTitle; // Store for debugging
 
         if (videoId) {
-          // Video Page Thumbnail Extraction
+          // Video Page Thumbnail Extraction - Revised
+          let preferredThumbnailUrl = null;
+          if (videoId) { // Ensure videoId is valid before constructing URL
+            preferredThumbnailUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+            console.log("[CS_ExtractInfo_VideoPage_P1Func] Constructed preferred (maxresdefault) thumbnailUrl:", preferredThumbnailUrl);
+          }
+
           const ogImage = document.querySelector("meta[property='og:image']");
           const imageSrcLink = document.querySelector("link[rel='image_src']");
-          if (ogImage && ogImage.content) {
-            currentResultToUpdate.thumbnailUrl = ogImage.content;
-            console.log('[CS_ExtractInfo_VideoPage_P1Func] Used og:image for video thumbnailUrl:', currentResultToUpdate.thumbnailUrl);
-          } else if (imageSrcLink && imageSrcLink.href) {
-            currentResultToUpdate.thumbnailUrl = imageSrcLink.href;
-            console.log('[CS_ExtractInfo_VideoPage_P1Func] Used link[rel="image_src"] for video thumbnailUrl:', currentResultToUpdate.thumbnailUrl);
-          } else {
-            currentResultToUpdate.thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-            console.log('[CS_ExtractInfo_VideoPage_P1Func] Used maxresdefault.jpg for video thumbnailUrl:', currentResultToUpdate.thumbnailUrl);
+
+          let metaThumbnailUrl = null;
+          if (ogImage && ogImage.content && ogImage.content.trim() !== "") {
+            metaThumbnailUrl = ogImage.content.trim();
+            console.log("[CS_ExtractInfo_VideoPage_P1Func] Found og:image for video thumbnailUrl:", metaThumbnailUrl);
+          } else if (imageSrcLink && imageSrcLink.href && imageSrcLink.href.trim() !== "") {
+            metaThumbnailUrl = imageSrcLink.href.trim();
+            console.log("[CS_ExtractInfo_VideoPage_P1Func] Found link[rel=\"image_src\"] for video thumbnailUrl:", metaThumbnailUrl);
           }
+
+          // Prioritize the constructed ytimg URL, but use meta if it also looks like a high-quality ytimg URL
+          if (preferredThumbnailUrl) {
+            currentResultToUpdate.thumbnailUrl = preferredThumbnailUrl;
+            // If meta thumbnail is also a ytimg URL, check if it might be better (e.g. sometimes /sddefault is in meta)
+            // For now, sticking to maxresdefault.jpg is simpler and usually higher quality.
+            if (metaThumbnailUrl && metaThumbnailUrl.includes("ytimg.com") && metaThumbnailUrl !== preferredThumbnailUrl) {
+                 console.log("[CS_ExtractInfo_VideoPage_P1Func] Meta thumbnail is also from ytimg, but preferring constructed one:", metaThumbnailUrl);
+            } else if (metaThumbnailUrl && !metaThumbnailUrl.includes("ytimg.com")) {
+                 console.log("[CS_ExtractInfo_VideoPage_P1Func] Meta thumbnail is not from ytimg, preferring constructed one:", metaThumbnailUrl);
+            }
+          } else if (metaThumbnailUrl) { // Fallback to meta if videoId was somehow not available for preferred URL
+            currentResultToUpdate.thumbnailUrl = metaThumbnailUrl;
+            console.log("[CS_ExtractInfo_VideoPage_P1Func] Used meta thumbnail as preferred (videoId-based) was not available:", metaThumbnailUrl);
+          } else {
+            currentResultToUpdate.thumbnailUrl = null; // Explicitly null if nothing found
+            console.log("[CS_ExtractInfo_VideoPage_P1Func] No video thumbnail could be determined.");
+          }
+
           currentResultToUpdate.debug_cs_thumbnailUrl = currentResultToUpdate.thumbnailUrl; // Store for debugging
 
           // --- MODIFICATION FOR CHANNEL AVATAR (FAVICON) AND CHANNEL LINK/TITLE ---
@@ -595,3 +619,5 @@ function parseYouTubeLinkPreview(linkUrl) {
     console.log("Content script: Message listener for background requests is active.");
   }
 })();
+
+[end of content_script.js]

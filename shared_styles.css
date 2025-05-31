@@ -1,29 +1,40 @@
 /* Shared Styles - Primarily for Theme Variables */
 
-/* Default Dark Theme Variables (Popup) */
 :root {
-  --popup-bg-color: #141414; /* Netflix dark background */
-  --popup-text-color: #ffffff;
-  --popup-header-color: #ffffff;
+  /* Popup Theme Variables - Dual Tone Ambiance */
+  --popup-bg-color: #141414; /* Main dark background */
+  --popup-text-color: #FFFFFF; /* General text color (like headers) */
+  --popup-header-color: #FFFFFF;
 
-  --popup-button-bg-color: #333333; /* Darker gray for buttons */
-  --popup-button-text-color: #ffffff;
-  --popup-button-border-color: #555555;
-  --popup-button-hover-bg-color: #e50914; /* Netflix Red for hover/accent */
-  --popup-button-hover-border-color: #e50914;
-  --popup-button-active-bg-color: #b20710; /* Darker red for active */
+  /* Button Group 1 (Website/Webpage) - Light Green based */
+  --popup-button-bg-color-group1: #a2d9a1;
+  --popup-button-text-color-group1: #000000;
+  --popup-button-border-color-group1: #8cb88c; /* Darker green for border */
+  --popup-button-hover-bg-color-group1: #8cb88c; /* Darker green for hover */
+  --popup-button-hover-border-color-group1: #7a9f79; /* Even darker for hover border */
+  --popup-button-active-bg-color-group1: #7a9f79; /* Darker green for active */
 
-  --popup-button-disabled-bg-color: #222222;
+  /* Button Group 2 (Video/Channel) - Light Purple based */
+  --popup-button-bg-color-group2: #c9a9c9;
+  --popup-button-text-color-group2: #000000;
+  --popup-button-border-color-group2: #b494b4; /* Darker purple for border */
+  --popup-button-hover-bg-color-group2: #b494b4; /* Darker purple for hover */
+  --popup-button-hover-border-color-group2: #a383a3; /* Even darker for hover border */
+  --popup-button-active-bg-color-group2: #a383a3; /* Darker purple for active */
+
+  --popup-button-disabled-bg-color: #222222; /* Keep disabled dark and neutral */
   --popup-button-disabled-text-color: #666666;
   --popup-button-disabled-border-color: #444444;
 
-  --popup-status-text-color: #aaaaaa;
+  --popup-status-text-color: #cccccc; /* Light gray for status */
   --popup-footer-border-color: #333333;
-  --popup-link-color: #88c0f0; /* Light blue for links */
+  --popup-link-color: #88c0f0; /* Light blue for links, or could use one of the tones */
   --popup-link-hover-color: #a9d4f5;
 
-  --popup-border-radius: 6px; /* Slightly less rounded for a sharper look */
-  --popup-button-border-radius: 4px; /* Consistent rounded buttons */
+  --popup-border-radius: 6px;
+  --popup-button-border-radius: 4px; /* This was set in previous step, keep it */
+
+  /* Existing variables for Options Page (dark_mode and light_pastel) follow this block */
 }
 
 /* Variables for Options Page (can be same or different) */
@@ -44,18 +55,23 @@ body[data-theme="dark_mode"] {
 }
 
 body[data-theme="light_pastel"] {
-  --theme-bg-primary: #f0f8ff;
-  --theme-bg-secondary: #ffffff;
-  --theme-text-primary: #333333;
-  --theme-text-secondary: #555555;
-  --theme-accent-primary: #98fb98;
-  --theme-accent-secondary: #dda0dd;
-  --theme-border-color: #d3d3d3;
-  --theme-shadow-color: rgba(0,0,0,0.1);
-  --theme-button-bg: #e9ecef;
-  --theme-button-text: #495057;
-  --theme-button-hover-bg: #dee2e6;
-  --theme-link-color: #663399;
+  --theme-bg-primary: #FFFFFF; /* Pure White */
+  --theme-bg-secondary: #F9F9F9; /* Very Light Gray for cards/sidebar */
+  --theme-text-primary: #0F0F0F; /* Dark Gray */
+  --theme-text-secondary: #606060; /* Medium Gray */
+
+  --theme-accent-primary: #81c784; /* Refined Pastel Green (slightly desaturated from #98fb98) */
+  --theme-accent-primary-rgb: 129, 199, 132; /* RGB for the green above */
+  --theme-accent-secondary: #ba9ddb; /* Refined Pastel Purple (slightly desaturated from #dda0dd) */
+
+  --theme-border-color: #E0E0E0; /* Lighter Gray for borders */
+  --theme-shadow-color: rgba(0,0,0,0.08); /* Softer shadow */
+
+  --theme-button-bg: #F0F0F0; /* Light Gray buttons */
+  --theme-button-text: #0F0F0F; /* Dark Gray text on buttons */
+  --theme-button-hover-bg: #E0E0E0; /* Slightly darker gray on hover */
+
+  --theme-link-color: #065FD4; /* YouTube-like blue for links */
 }
 
 /* Add more shared styles or utility classes here if needed */

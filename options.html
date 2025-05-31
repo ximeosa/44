@@ -4,7 +4,6 @@
   <title>Advanced Bookmarker - My Bookmarks</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="shared_styles.css">
-  <!-- Existing styles from options.html, contains theme variables and bookmark item styles -->
   <style>
     :root {
       /* Default theme (Light Pastel) */
@@ -264,11 +263,15 @@
     .theme-selector select {
         min-width: 200px; /* Give select some width */
     }
-
+    .sidebar-nav .settings-icon-link { /* Style for the gear icon link */
+      font-size: 1.2em; /* Make icon a bit larger */
+      padding: 10px 15px; /* Adjust padding if needed */
+      text-align: center;
+    }
   </style>
-  <link rel="stylesheet" href="options_layout.css"> <!-- New CSS for sidebar layout -->
+  <link rel="stylesheet" href="options_layout.css">
 </head>
-<body data-theme="light_pastel"> <!-- Default theme, options.js will manage this -->
+<body data-theme="light_pastel">
 
   <div class="options-container">
     <nav class="sidebar">
@@ -276,21 +279,21 @@
         <h2>Menu</h2>
       </div>
       <ul class="sidebar-nav">
-        <li><a href="#" data-view="view-all">All Bookmarks</a></li>
-        <li><a href="#" data-view="view-websites">Websites & Pages</a></li>
+        <li><a href="#" data-view="view-channels">Channels</a></li>
         <li><a href="#" data-view="view-videos">YouTube Videos</a></li>
-        <li><a href="#" data-view="view-channels">YouTube Channels</a></li>
-        <li><a href="#" data-view="view-selections">Selections & Notes</a></li>
-        <li><a href="#" data-view="view-settings">Settings</a></li>
+        <li><a href="#" data-view="view-website-domain">Websites (Domain)</a></li>
+        <li><a href="#" data-view="view-webpage-specific">Webpages (Specific)</a></li>
+        <li><a href="#" data-view="view-all">Combined (All)</a></li>
+        <li><a href="#" data-view="view-settings" class="settings-icon-link" title="Settings">⚙️</a></li>
       </ul>
     </nav>
 
     <main class="content-area">
       <!-- Settings View -->
       <div id="view-settings" class="content-view">
-        <div class="settings-section"> <!-- Keep original class for styling continuity -->
+        <div class="settings-section">
           <h1>Settings</h1>
-          <div class="controls">
+           <div class="controls">
             <button id="exportBtn">Export Bookmarks</button>
             <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
             <input type="file" id="importFile" accept=".json">
@@ -311,36 +314,28 @@
         </div>
       </div>
 
-      <!-- Websites & Pages View (Combined with "All" logic later in JS) -->
-      <div id="view-websites" class="content-view">
-        <h2 class="section-title">Websites & Pages</h2>
-        <ul id="websitesList" class="bookmark-list">
-          <!-- Bookmarks will be dynamically inserted here by options.js -->
-        </ul>
-      </div>
-
-      <!-- YouTube Videos View (Combined with "All" logic later in JS) -->
-      <div id="view-videos" class="content-view">
-        <h2 class="section-title">YouTube Videos</h2>
-        <ul id="youtubeVideosList" class="bookmark-list">
-          <!-- Bookmarks will be dynamically inserted here -->
-        </ul>
-      </div>
-
-      <!-- YouTube Channels View (Combined with "All" logic later in JS) -->
+      <!-- Channels View -->
       <div id="view-channels" class="content-view">
         <h2 class="section-title">YouTube Channels</h2>
-        <ul id="youtubeChannelsList" class="bookmark-list">
-          <!-- Bookmarks will be dynamically inserted here -->
-        </ul>
+        <ul id="youtubeChannelsList" class="bookmark-list"></ul>
       </div>
 
-      <!-- Selections & Notes View (Combined with "All" logic later in JS) -->
-      <div id="view-selections" class="content-view">
-        <h2 class="section-title">Selections & Notes</h2>
-        <ul id="selectionsList" class="bookmark-list">
-          <!-- Bookmarks will be dynamically inserted here -->
-        </ul>
+      <!-- YouTube Videos View -->
+      <div id="view-videos" class="content-view">
+        <h2 class="section-title">YouTube Videos</h2>
+        <ul id="youtubeVideosList" class="bookmark-list"></ul>
+      </div>
+
+      <!-- Websites (Domain) View -->
+      <div id="view-website-domain" class="content-view">
+        <h2 class="section-title">Websites (Domains)</h2>
+        <ul id="websiteDomainList" class="bookmark-list"></ul> <!-- Renamed from websitesList -->
+      </div>
+
+      <!-- Webpages (Specific) View -->
+      <div id="view-webpage-specific" class="content-view">
+        <h2 class="section-title">Webpages (Specific URLs)</h2>
+        <ul id="webpageSpecificList" class="bookmark-list"></ul> <!-- New list -->
       </div>
 
     </main>

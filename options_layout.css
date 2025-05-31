@@ -162,3 +162,19 @@ body {
   opacity: 0.8;
   outline: 2px dashed var(--theme-accent-secondary);
 }
+
+/* Thumbnail ambiance effect for light theme */
+body[data-theme="light_pastel"] .bookmark-item .bookmark-image-container {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+body[data-theme="light_pastel"] .bookmark-item:hover .bookmark-image-container {
+  box-shadow: 0px 0px 12px 3px rgba(var(--theme-accent-primary-rgb, 129, 199, 132), 0.4); /* Use RGB var with fallback */
+  /* Consider adding a subtle border as well if desired */
+  /* border: 1px solid rgba(var(--theme-accent-primary-rgb, 129, 199, 132), 0.2); */
+}
+
+/* Ensure the image itself does not overflow if container has padding or border for shadow effect */
+body[data-theme="light_pastel"] .bookmark-item .bookmark-image {
+  border-radius: inherit; /* If container gets rounded for shadow */
+}
