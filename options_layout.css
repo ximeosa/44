@@ -178,3 +178,54 @@ body[data-theme="light_pastel"] .bookmark-item:hover .bookmark-image-container {
 body[data-theme="light_pastel"] .bookmark-item .bookmark-image {
   border-radius: inherit; /* If container gets rounded for shadow */
 }
+
+/* Sidebar Toggle Button */
+#sidebarToggleBtn {
+  background: none;
+  border: none;
+  color: var(--theme-text-primary);
+  font-size: 1.8em; /* Make hamburger icon larger */
+  cursor: pointer;
+  padding: 0px 10px;
+  margin-bottom: 10px; /* Space below toggle */
+  display: block; /* Or flex to align with a title if kept */
+  /* text-align: left; */
+}
+.sidebar-header { /* Adjust sidebar header to accommodate button */
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */ /* If title is kept */
+}
+.sidebar-header h2 {
+  margin-left: 10px; /* Space between button and title */
+}
+
+
+/* Collapsed Sidebar State */
+.sidebar-collapsed .sidebar {
+  width: 60px; /* Width for icons only */
+}
+
+.sidebar-collapsed .sidebar .sidebar-header h2,
+.sidebar-collapsed .sidebar .sidebar-nav li a span.link-text { /* Assuming link text is wrapped in span */
+  display: none;
+}
+
+.sidebar-collapsed .sidebar .sidebar-nav li a {
+  text-align: center; /* Center icons */
+  padding: 15px 0; /* Adjust padding for icon-only */
+}
+.sidebar-collapsed .sidebar .sidebar-nav li a.settings-icon-link {
+   font-size: 1.5em; /* Ensure gear icon is prominent */
+}
+
+
+/* Adjust content area when sidebar is collapsed */
+.sidebar-collapsed .content-area {
+  margin-left: 60px; /* Match collapsed sidebar width */
+}
+
+/* Transition for sidebar width and content margin */
+.sidebar, .content-area {
+  transition: width 0.3s ease, margin-left 0.3s ease;
+}

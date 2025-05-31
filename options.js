@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const websiteDomainList = document.getElementById('websiteDomainList'); // Renamed
-  const webpageSpecificList = document.getElementById('webpageSpecificList'); // New list
+  const websitesList = document.getElementById('websitesList');
   // const youtubeList = document.getElementById('youtubeList'); // Remove this
   const youtubeVideosList = document.getElementById('youtubeVideosList');
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- SIDEBAR NAVIGATION LOGIC ---
   const sidebarNavLinks = document.querySelectorAll('.sidebar-nav a');
   const contentViews = document.querySelectorAll('.content-area .content-view');
-  const allBookmarkListViews = ['view-channels', 'view-videos', 'view-website-domain', 'view-webpage-specific']; // Updated order, removed selections
+  const allBookmarkListViews = ['view-channels', 'view-videos', 'view-websites']; // Updated for new structure
 
   function activateView(viewId) {
     // Deactivate all views and links first
@@ -59,10 +58,42 @@ document.addEventListener('DOMContentLoaded', function() {
   // activateView(lastActiveView); // Moved to after initial bookmark load for view integrity.
   // --- END SIDEBAR NAVIGATION LOGIC ---
 
+  // --- SIDEBAR TOGGLE LOGIC ---
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  const optionsContainer = document.querySelector('.options-container'); // Target the container with the state class
+
+  function setSidebarState(collapsed) {
+    if (optionsContainer) { // Add null check for optionsContainer
+      if (collapsed) {
+        optionsContainer.classList.add('sidebar-collapsed');
+        optionsContainer.classList.remove('sidebar-expanded');
+      } else {
+        optionsContainer.classList.remove('sidebar-collapsed');
+        optionsContainer.classList.add('sidebar-expanded');
+      }
+      localStorage.setItem('sidebarCollapsed', collapsed ? 'true' : 'false');
+    }
+  }
+
+  if (sidebarToggleBtn && optionsContainer) {
+    sidebarToggleBtn.addEventListener('click', () => {
+      const isCollapsed = optionsContainer.classList.contains('sidebar-collapsed');
+      setSidebarState(!isCollapsed);
+    });
+
+    // Load initial state
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    // Default to expanded (false) if no saved state or if saved state is 'false'
+    setSidebarState(savedState === 'true');
+  } else {
+    console.warn('Sidebar toggle button or options container not found. Toggle functionality will not work.');
+  }
+  // --- END SIDEBAR TOGGLE LOGIC ---
+
 
   // Function to update draggable attributes and visual cues (Added)
   function updateDraggableState(enabled) {
-    const lists = [websiteDomainList, webpageSpecificList, youtubeVideosList, youtubeChannelsList]; // Updated lists
+    const lists = [websitesList, youtubeVideosList, youtubeChannelsList]; // Updated for new structure
     lists.forEach(list => {
       if (list && enabled) { // Added null check for list
         list.classList.add('dnd-enabled');
@@ -268,26 +299,23 @@ document.addEventListener('DOMContentLoaded', function() {
     return item;
   }
 
-  // Updated renderBookmarks to handle new lists and remove selections
+  // Updated renderBookmarks for consolidated websitesList
   function renderBookmarks(bookmarks) {
-    websiteDomainList.innerHTML = '';
-    webpageSpecificList.innerHTML = '';
+    websitesList.innerHTML = '';
     youtubeVideosList.innerHTML = '';
     youtubeChannelsList.innerHTML = '';
     // selectionsList.innerHTML = ''; // Removed
 
-    let countWebsiteDomain = 0, countWebpageSpecific = 0, countVideos = 0, countChannels = 0;
+    let countWebsites = 0, countVideos = 0, countChannels = 0;
     bookmarks.forEach(bookmark => {
       const bookmarkElement = createBookmarkElement(bookmark);
       if (bookmark.type === 'youtube_video') { youtubeVideosList.appendChild(bookmarkElement); countVideos++; }
       else if (bookmark.type === 'youtube_channel') { youtubeChannelsList.appendChild(bookmarkElement); countChannels++; }
-      else if (bookmark.type === 'website') { websiteDomainList.appendChild(bookmarkElement); countWebsiteDomain++; } // Goes to websiteDomainList
-      else if (bookmark.type === 'page') { webpageSpecificList.appendChild(bookmarkElement); countWebpageSpecific++; }    // Goes to webpageSpecificList
+      else if (bookmark.type === 'website' || bookmark.type === 'page') { websitesList.appendChild(bookmarkElement); countWebsites++; }
       // else if (bookmark.type === 'selection') { selectionsList.appendChild(bookmarkElement); } // Removed
     });
 
-    if (countWebsiteDomain === 0) websiteDomainList.innerHTML = '<li class="empty-list-placeholder">No website domain bookmarks yet.</li>';
-    if (countWebpageSpecific === 0) webpageSpecificList.innerHTML = '<li class="empty-list-placeholder">No specific page bookmarks yet.</li>';
+    if (countWebsites === 0) websitesList.innerHTML = '<li class="empty-list-placeholder">No website or page bookmarks yet.</li>';
     if (countVideos === 0) youtubeVideosList.innerHTML = '<li class="empty-list-placeholder">No YouTube video bookmarks yet.</li>';
     if (countChannels === 0) youtubeChannelsList.innerHTML = '<li class="empty-list-placeholder">No YouTube channel bookmarks yet.</li>';
 
@@ -339,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Renamed and expanded function (Modified)
   function addListEventListeners() {
-    const lists = [websiteDomainList, webpageSpecificList, youtubeVideosList, youtubeChannelsList]; // Updated lists
+    const lists = [websitesList, youtubeVideosList, youtubeChannelsList]; // Updated for new structure
     lists.forEach(list => {
       if (!list) return; // Add null check for safety
       // Delete listener (event delegation)

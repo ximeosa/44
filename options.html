@@ -273,17 +273,17 @@
 </head>
 <body data-theme="light_pastel">
 
-  <div class="options-container">
+  <div class="options-container sidebar-expanded">
     <nav class="sidebar">
       <div class="sidebar-header">
+        <button id="sidebarToggleBtn" title="Toggle Sidebar">&#9776;</button>
         <h2>Menu</h2>
       </div>
       <ul class="sidebar-nav">
-        <li><a href="#" data-view="view-channels">Channels</a></li>
-        <li><a href="#" data-view="view-videos">YouTube Videos</a></li>
-        <li><a href="#" data-view="view-website-domain">Websites (Domain)</a></li>
-        <li><a href="#" data-view="view-webpage-specific">Webpages (Specific)</a></li>
-        <li><a href="#" data-view="view-all">Combined (All)</a></li>
+        <li><a href="#" data-view="view-channels"><span class="link-text">Channels</span></a></li>
+        <li><a href="#" data-view="view-videos"><span class="link-text">YouTube Videos</span></a></li>
+        <li><a href="#" data-view="view-websites"><span class="link-text">Websites & Pages</span></a></li>
+        <li><a href="#" data-view="view-all"><span class="link-text">All Bookmarks</span></a></li>
         <li><a href="#" data-view="view-settings" class="settings-icon-link" title="Settings">⚙️</a></li>
       </ul>
     </nav>
@@ -326,16 +326,10 @@
         <ul id="youtubeVideosList" class="bookmark-list"></ul>
       </div>
 
-      <!-- Websites (Domain) View -->
-      <div id="view-website-domain" class="content-view">
-        <h2 class="section-title">Websites (Domains)</h2>
-        <ul id="websiteDomainList" class="bookmark-list"></ul> <!-- Renamed from websitesList -->
-      </div>
-
-      <!-- Webpages (Specific) View -->
-      <div id="view-webpage-specific" class="content-view">
-        <h2 class="section-title">Webpages (Specific URLs)</h2>
-        <ul id="webpageSpecificList" class="bookmark-list"></ul> <!-- New list -->
+      <!-- Websites & Pages View (Combined) -->
+      <div id="view-websites" class="content-view">
+        <h2 class="section-title">Websites & Pages</h2>
+        <ul id="websitesList" class="bookmark-list"></ul> <!-- This list will handle both 'website' and 'page' types -->
       </div>
 
     </main>
