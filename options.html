@@ -40,25 +40,93 @@
       background-color: var(--theme-bg-primary);
       color: var(--theme-text-primary);
       transition: background-color 0.3s, color 0.3s;
+      height: 100vh;
+      overflow: hidden; /* Prevent body scrollbars, main-content will scroll */
     }
-    .container { /* Main content wrapper */
+    .options-container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: var(--theme-bg-secondary);
       padding: 20px;
-      max-width: 1200px; /* Or your preferred max width */
-      margin: 20px auto; /* Centering container with some top/bottom margin */
-      border-radius: 8px;
+      height: 100%;
+      box-shadow: 2px 0 5px var(--theme-shadow-color);
+      border-right: 1px solid var(--theme-border-color);
+      display: flex;
+      flex-direction: column;
     }
-    h1 { /* General H1, not settings/section specific */
+    .sidebar h2 { /* Optional title for sidebar */
+      font-size: 1.2em;
       color: var(--theme-text-primary);
-      margin-bottom: 20px; /* Kept from original */
-      font-size: 24px; /* Kept from original */
+      margin-top: 0;
+      margin-bottom: 20px;
+      text-align: center;
     }
-    .settings-section h2, .section-title { /* Specific H2s */
+    .sidebar a {
+      display: block;
+      padding: 10px 15px;
+      color: var(--theme-text-primary);
+      text-decoration: none;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .sidebar a:hover {
+      background-color: var(--theme-accent-primary);
+      color: var(--theme-bg-primary); /* Or a contrasting text color for the accent */
+    }
+    .sidebar a.active {
+      background-color: var(--theme-accent-secondary);
+      color: #ffffff; /* Ensure contrast on active link */
+      font-weight: bold;
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      height: 100%; /* Ensure it takes full height to enable overflow-y */
+      box-sizing: border-box; /* Include padding in height calculation */
+    }
+    .content-section {
+      display: none; /* Hidden by default */
+      animation: fadeIn 0.5s; /* Simple fade-in animation */
+    }
+    .content-section.active-content {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Original .container is no longer used for full page layout, but might be useful for section content */
+    .container {
+      padding: 0; /* Reset padding if used within main-content */
+      max-width: 100%; /* Sections will take available width */
+      margin: 0 auto;
+      border-radius: 8px; /* Keep for consistency if used */
+    }
+
+    h1 { /* General H1, if used in main-content header */
+      color: var(--theme-text-primary);
+      margin-top: 0; /* Adjust if it's the first element in main-content */
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    /* Adjust section titles within the new structure */
+    .content-section h2, .section-title { /* Specific H2s for sections */
       color: var(--theme-text-primary);
       border-bottom: 1px solid var(--theme-border-color);
-      font-size: 20px; /* Kept from original */
-      margin-top: 30px; /* Kept from original */
-      margin-bottom: 10px; /* Kept from original */
-      padding-bottom: 5px; /* Kept from original */
+      font-size: 20px;
+      margin-top: 0; /* First element in a content section */
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+    }
+    /* Ensure settings section title is also adapted if needed */
+    #content-settings .settings-section > h2 {
+         margin-top: 0; /* Already part of settings section, so no extra top margin */
     }
 
     .bookmark-list {
@@ -72,9 +140,9 @@
 
     .bookmark-item {
       background-color: var(--theme-bg-secondary);
-      border-radius: 8px;
+      border-radius: 8px; /* Consistent rounded corners */
       box-shadow: 0 4px 8px var(--theme-shadow-color);
-      overflow: hidden;
+      overflow: hidden; /* Keep this to respect border-radius with images */
       display: flex;
       flex-direction: column;
       transition: box-shadow 0.3s ease, transform 0.2s ease;
@@ -196,31 +264,32 @@
     /* Controls, Settings, Theme Selector */
     .settings-section { /* Wrapper for all settings */
         background-color: var(--theme-bg-secondary);
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 30px;
+        padding: 20px; /* Increased padding for a better look */
+        border-radius: 8px; /* Consistent rounded corners */
+        /* margin-bottom: 30px; No longer needed as it's in its own section */
         box-shadow: 0 2px 4px var(--theme-shadow-color);
     }
     .controls { /* Specific to import/export/dnd toggle row */
       display: flex;
-      flex-wrap: wrap; /* Allow items to wrap */
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px; /* Space between control groups */
-      padding-bottom: 15px; /* Space before theme selector if it's separate */
-      border-bottom: 1px solid var(--theme-border-color); /* Separator line */
-      margin-bottom: 15px; /* Space after the controls row */
+      gap: 15px; /* Increased gap */
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--theme-border-color);
+      margin-bottom: 15px;
     }
     .controls button, 
     .controls input[type="file"], 
     .controls .setting-toggle, 
     .theme-selector select {
-      padding: 8px 12px; /* Adjusted padding */
+      padding: 10px 15px; /* Larger clickable area */
       background-color: var(--theme-button-bg);
-      color: var(--theme-button-text); /* Use button text color */
+      color: var(--theme-button-text);
       border: 1px solid var(--theme-border-color);
-      border-radius: 4px;
+      border-radius: 6px; /* Consistent rounded corners */
       cursor: pointer;
       transition: background-color 0.2s ease;
+      font-size: 0.9em;
     }
     .controls button:hover, 
     .controls input[type="file"]:hover, 
@@ -228,30 +297,31 @@
     .theme-selector select:hover {
       background-color: var(--theme-button-hover-bg);
     }
-    .controls .setting-toggle { /* Div wrapping label and checkbox */
-        display: inline-flex; /* Align label and checkbox */
+    .controls .setting-toggle {
+        display: inline-flex;
         align-items: center;
-        background-color: transparent; /* Make the wrapper transparent */
-        border: none; /* No border for the wrapper */
-        padding: 0; /* Reset padding */
+        background-color: transparent;
+        border: none;
+        padding: 0;
     }
     .setting-toggle label, .theme-selector label {
         color: var(--theme-text-primary);
         margin-right: 8px;
+        font-size: 0.9em;
     }
     .setting-toggle input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
+      width: 20px; /* Slightly larger checkbox */
+      height: 20px;
       cursor: pointer;
-      accent-color: var(--theme-accent-primary); /* Style checkbox color */
+      accent-color: var(--theme-accent-primary);
     }
-    #importFileLabel { /* Keep original margin if needed */
-        margin-right: 10px;
+    #importFileLabel {
+        margin-right: 10px; /* Kept */
     }
     #importStatus {
         color: var(--theme-text-secondary);
         font-size: 0.9em;
-        margin-left: 10px;
+        margin-left: 10px; /* Kept */
     }
     .theme-selector {
         display: flex;
@@ -259,58 +329,80 @@
         gap: 8px;
     }
     .theme-selector select {
-        min-width: 200px; /* Give select some width */
+        min-width: 220px; /* Wider select */
     }
 
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>My Bookmarks</h1>
+  <div class="options-container">
+    <div class="sidebar">
+      <h2>Bookmarks Menu</h2>
+      <a href="#" data-target="websites" class="active">Websites &amp; Pages</a>
+      <a href="#" data-target="videos">YouTube Videos</a>
+      <a href="#" data-target="channels">YouTube Channels</a>
+      <a href="#" data-target="selections">Selections &amp; Notes</a>
+      <a href="#" data-target="settings">Settings</a>
+    </div>
+    <div class="main-content">
+      <h1>My Bookmarks</h1> <!-- General title for the main content area -->
 
-    <div class="settings-section">
-      <h2>Settings</h2>
-      <div class="controls">
-        <button id="exportBtn">Export Bookmarks</button>
-        <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
-        <input type="file" id="importFile" accept=".json">
-        <span id="importStatus"></span>
-        
-        <div class="setting-toggle">
-          <label for="dragDropToggle">Enable Drag & Drop Reordering:</label>
-          <input type="checkbox" id="dragDropToggle">
+      <div id="content-websites" class="content-section active-content">
+        <h2 class="section-title">Websites &amp; Pages</h2>
+        <ul id="websitesList" class="bookmark-list">
+          <!-- Placeholder or dynamically filled -->
+        </ul>
+      </div>
+
+      <div id="content-videos" class="content-section">
+        <h2 class="section-title">YouTube Videos</h2>
+        <ul id="youtubeVideosList" class="bookmark-list">
+          <!-- Dynamically filled -->
+        </ul>
+      </div>
+
+      <div id="content-channels" class="content-section">
+        <h2 class="section-title">YouTube Channels</h2>
+        <ul id="youtubeChannelsList" class="bookmark-list">
+          <!-- Dynamically filled -->
+        </ul>
+      </div>
+
+      <div id="content-selections" class="content-section">
+        <h2 class="section-title">Selections &amp; Notes</h2>
+        <ul id="selectionsList" class="bookmark-list">
+          <!-- Dynamically filled -->
+        </ul>
+      </div>
+
+      <div id="content-settings" class="content-section">
+        <!-- Existing settings section will be moved here by JS logic in a real scenario,
+             but for direct HTML modification, we move it now.
+             The original .settings-section div is moved entirely. -->
+        <div class="settings-section">
+          <h2>Settings</h2>
+          <div class="controls">
+            <button id="exportBtn">Export Bookmarks</button>
+            <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
+            <input type="file" id="importFile" accept=".json">
+            <span id="importStatus"></span>
+
+            <div class="setting-toggle">
+              <label for="dragDropToggle">Enable Drag &amp; Drop Reordering:</label>
+              <input type="checkbox" id="dragDropToggle">
+            </div>
+          </div>
+          <div class="theme-selector">
+            <label for="themeSelect">Select Theme:</label>
+            <select id="themeSelect">
+              <option value="light_pastel">Light (Pastel Green/Purple)</option>
+              <option value="dark_mode">Dark (Blue/Black)</option>
+              <option value="system_default">System Default</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="theme-selector">
-        <label for="themeSelect">Select Theme:</label>
-        <select id="themeSelect">
-          <option value="light_pastel">Light (Pastel Green/Purple)</option>
-          <option value="dark_mode">Dark (Blue/Black)</option>
-          <option value="system_default">System Default</option>
-        </select>
-      </div>
     </div>
-
-    <h2 class="section-title">Websites & Pages</h2>
-    <ul id="websitesList" class="bookmark-list">
-      <li class="bookmark-item">Placeholder for a website bookmark.</li>
-    </ul>
-
-    <h2 class="section-title">YouTube Videos</h2>
-    <ul id="youtubeVideosList" class="bookmark-list">
-      <!-- YouTube Videos will be dynamically inserted here -->
-    </ul>
-
-    <h2 class="section-title">YouTube Channels</h2>
-    <ul id="youtubeChannelsList" class="bookmark-list">
-      <!-- YouTube Channels will be dynamically inserted here -->
-    </ul>
-    
-    <h2 class="section-title">Selections & Notes</h2>
-    <ul id="selectionsList" class="bookmark-list">
-      <li class="bookmark-item">Placeholder for a text selection.</li>
-    </ul>
-
   </div>
   <script src="options.js"></script>
 </body>

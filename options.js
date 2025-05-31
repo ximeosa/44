@@ -4,9 +4,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const youtubeVideosList = document.getElementById('youtubeVideosList');
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
   const selectionsList = document.getElementById('selectionsList');
-  const dragDropToggle = document.getElementById('dragDropToggle'); // Added
-  let dragDropEnabled = false; // Added
-  let draggedItem = null; // Added
+
+  // Sidebar navigation elements
+  const sidebarLinks = document.querySelectorAll('.sidebar a');
+  const contentSections = document.querySelectorAll('.main-content .content-section');
+  const mainContentTitle = document.querySelector('.main-content > h1'); // Main H1 title
+
+  const dragDropToggle = document.getElementById('dragDropToggle');
+  let dragDropEnabled = false;
+  let draggedItem = null;
   let originalBookmarksOrder = []; // Added
 
   // Function to update draggable attributes and visual cues (Added)
@@ -330,17 +336,61 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDraggableState(dragDropEnabled); 
   });
 
-  // Initial load
-  loadAndRenderBookmarks();
+  // --- SIDEBAR NAVIGATION ---
+  function setActiveContent(targetId) {
+    // Update main title based on section, or set a generic one for settings
+    if (targetId === 'settings') {
+        mainContentTitle.textContent = 'Application Settings';
+    } else {
+        // Find the link text and use it for the title
+        const activeLink = document.querySelector(`.sidebar a[data-target="${targetId}"]`);
+        mainContentTitle.textContent = activeLink ? activeLink.textContent : 'My Bookmarks';
+    }
 
+    contentSections.forEach(section => {
+      if (section.id === 'content-' + targetId) {
+        section.classList.add('active-content');
+      } else {
+        section.classList.remove('active-content');
+      }
+    });
+
+    sidebarLinks.forEach(link => {
+      if (link.dataset.target === targetId) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+    // Persist the last active tab to local storage
+    chrome.storage.local.set({ lastActiveOptionsTab: targetId });
+  }
+
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      const target = this.dataset.target;
+      setActiveContent(target);
+    });
+  });
+
+  // Initial load & State Restoration
+  loadAndRenderBookmarks(); // Load bookmarks first
+
+  // Restore last active tab or default to 'websites'
+  chrome.storage.local.get({ lastActiveOptionsTab: 'websites' }, function(data) {
+    setActiveContent(data.lastActiveOptionsTab);
+  });
+
+  // Listener for changes in storage (bookmarks, settings, etc.)
   chrome.storage.onChanged.addListener(function(changes, namespace) {
     if (namespace === 'local' && changes.bookmarks) {
       console.log('Bookmarks changed in storage, reloading options page list.');
-      // The renderBookmarks function is called, which will reapply D&D attributes
-      loadAndRenderBookmarks();
+      loadAndRenderBookmarks(); // This will re-render and re-apply D&D, etc.
     }
-    // If only D&D setting changes, no need to reload all bookmarks,
-    // but updateDraggableState has already handled it.
+    // No specific action needed here for lastActiveOptionsTab change, it's for next load.
+    // D&D setting changes are handled by its own listener.
+    // Theme changes are handled by its own listener.
   });
 
   const exportBtn = document.getElementById('exportBtn');
