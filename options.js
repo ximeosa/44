@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const item = document.createElement('li');
     item.classList.add('bookmark-item');
     item.setAttribute('data-id', bookmark.id);
+    item.setAttribute('data-type', bookmark.type); // Added data-type attribute
 
     let imageAreaContent = '';
     let displayImageUrl = bookmark.thumbnailUrl || bookmark.faviconUrl;
@@ -610,7 +611,15 @@ document.addEventListener('DOMContentLoaded', function() {
               const message = `Import successful! Added ${newBookmarksCount} new bookmarks. Skipped ${skippedDuplicatesCount} duplicates.`;
               importStatus.textContent = message;
               console.log(message);
-              alert(message);
+              alert(message); // Alert remains for immediate user feedback.
+
+              // Auto-dismiss the importStatus message after 7 seconds for success.
+              setTimeout(() => {
+                if (importStatus.textContent === message) { // Only clear if it's still the success message
+                  importStatus.textContent = '';
+                }
+              }, 7000);
+
               loadAndRenderBookmarks(); // Refresh the displayed list
             }
             event.target.value = ''; // Reset file input

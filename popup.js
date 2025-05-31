@@ -100,15 +100,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (intendedBookmarkType === 'website') {
           finalUrl = new URL(currentTabInfo.url).origin;
           finalTitle = new URL(currentTabInfo.url).hostname; 
-          thumbnail = null; 
+          thumbnail = null; // Explicitly null for websites
         } else if (intendedBookmarkType === 'youtube_channel') {
           if (request.data.extractedChannelUrl) { 
             finalUrl = request.data.extractedChannelUrl; 
             finalTitle = request.data.extractedChannelTitle || finalTitle; 
-            if (currentTabInfo.url.includes("youtube.com/watch")) { // If bookmarking channel from a video page
-                 thumbnail = favicon; // Use channel icon (in favicon) as thumbnail
+            // For channels, thumbnail can be specific (banner) or derived (favicon/avatar)
+            // If on a video page trying to save channel, content_script sends channel avatar as favicon.
+            // Thumbnail from content_script for channel page is usually the banner.
+            // If from video page, we want channel avatar as thumbnail.
+            if (currentTabInfo.url.includes("youtube.com/watch")) {
+                 thumbnail = favicon; // Use channel icon (sent as favicon by content_script) as thumbnail
+            } else {
+                 // On actual channel page, request.data.thumbnailUrl is likely channel banner.
+                 // request.data.faviconUrl is channel avatar.
+                 // Let's prioritize a dedicated thumbnail if available, else avatar.
+                 thumbnail = request.data.thumbnailUrl || request.data.faviconUrl;
             }
-            // If on actual channel page, content script's favicon (channel icon) and thumbnail (banner/icon) are used.
           } else {
             // CONTENT SCRIPT FAILED TO EXTRACT CHANNEL URL
             // This happens if selectors failed or not on a recognizable video/channel page structure
@@ -118,7 +126,13 @@ document.addEventListener('DOMContentLoaded', function() {
             proceedWithSave = false; // Do not save this bookmark
             setTimeout(() => { statusMessage.textContent = ''; window.close(); }, 2500); // Close popup after message
           }
+        } else if (intendedBookmarkType === 'youtube_video') {
+          // For YouTube videos, the thumbnail is directly from content_script's extraction (og:image or ytimg).
+          // This line explicitly ensures that 'thumbnail' variable uses the value from request.data.
+          // This is technically redundant if no other condition overwrites it, but adds clarity and robustness.
+          thumbnail = request.data.thumbnailUrl;
         }
+        // For 'page' type, thumbnail remains request.data.thumbnailUrl without specific adjustments here.
         
         if (proceedWithSave) {
           statusMessage.textContent = `Bookmarking: ${finalTitle.substring(0,40)}...`;

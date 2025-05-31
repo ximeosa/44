@@ -56,7 +56,7 @@
       border-right: 1px solid var(--theme-border-color);
       display: flex;
       flex-direction: column;
-      transition: width 0.3s ease;
+      transition: width 0.25s ease-in-out; /* Updated transition */
       overflow-x: hidden; /* Hide text that overflows during transition */
     }
     .sidebar:hover {
@@ -67,45 +67,57 @@
       color: var(--theme-text-primary);
       margin-top: 0;
       margin-bottom: 20px;
-      text-align: center;
-      white-space: nowrap; /* Prevent title from wrapping */
+      text-align: center; /* Center icon in narrow view */
+      white-space: nowrap;
     }
-    .sidebar h2 .link-text { /* Assuming h2 text is also wrapped for consistency */
+    .sidebar h2 .icon-placeholder {
+      margin: 0 auto; /* Center the icon placeholder if text is hidden */
+    }
+    .sidebar h2 .link-text {
       display: none;
     }
     .sidebar:hover h2 .link-text {
       display: inline;
     }
-     .sidebar:hover h2 .icon-placeholder { /* If icons were used for title too */
-      margin-right: 10px;
+    .sidebar:hover h2 .icon-placeholder {
+      margin-right: 10px; /* Space for text */
+      margin-left: 0; /* Reset auto margin */
+    }
+    .sidebar:hover h2 {
+      text-align: left; /* Align text to left when expanded */
     }
     .sidebar a {
-      display: flex; /* Use flex for icon and text alignment */
-      align-items: center; /* Vertically center icon and text */
-      padding: 10px; /* Adjusted padding */
+      display: flex;
+      align-items: center;
+      padding: 10px;
       color: var(--theme-text-primary);
       text-decoration: none;
       border-radius: 6px;
       margin-bottom: 8px;
       transition: background-color 0.2s ease, color 0.2s ease;
-      white-space: nowrap; /* Prevent link text from wrapping */
+      white-space: nowrap;
+    }
+    .sidebar a .icon-placeholder {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin: 0 auto; /* Center icon when text is hidden */
     }
     .sidebar a .link-text {
-      display: none; /* Text hidden by default */
-      margin-left: 10px; /* Space between icon (if any) and text */
+      display: none;
+      margin-left: 10px;
+    }
+    .sidebar:hover a .icon-placeholder {
+      margin-left: 0; /* Reset auto margin for icon */
+      margin-right: 0; /* Ensure no extra right margin if text is short */
     }
     .sidebar:hover a .link-text {
-      display: inline; /* Text visible on hover */
-    }
-     .sidebar a .icon-placeholder { /* Basic placeholder for icon alignment */
-      display: inline-block;
-      width: 20px; /* Adjust as needed */
-      height: 20px; /* Adjust as needed */
-      /* background-color: #ccc; In case you want to visualize it */
-      flex-shrink: 0; /* Prevent icon from shrinking */
+      display: inline;
     }
     .sidebar:hover a {
-      padding: 10px 15px; /* Restore original padding on hover if needed */
+      padding: 10px 15px;
+      justify-content: flex-start; /* Align items to start when expanded */
     }
     .sidebar a:hover {
       background-color: var(--theme-accent-primary);
@@ -123,10 +135,10 @@
       height: 100%;
       box-sizing: border-box;
       margin-left: 60px; /* Default margin for narrow sidebar */
-      transition: margin-left 0.3s ease;
+      transition: margin-left 0.25s ease-in-out; /* Updated transition */
     }
     .options-container.sidebar-expanded .main-content { /* JS will toggle this class */
-      margin-left: 220px;
+      margin-left: 220px; /* Expanded margin */
     }
     .content-section {
       display: none; /* Hidden by default */
@@ -224,6 +236,43 @@
     }
     .bookmark-image-placeholder::before {
         content: "No Image";
+    }
+
+    /* Specific thumbnail/placeholder sizes based on bookmark type */
+    .bookmark-item[data-type="website"] .bookmark-image-container {
+      height: 48px;
+      width: 48px;
+      min-width: 48px;
+      background-color: transparent; /* Allow favicon transparency to show */
+      margin-bottom: 5px; /* Add some space below small icon */
+    }
+    .bookmark-item[data-type="website"] .bookmark-image {
+      object-fit: contain;
+      max-height: 100%;
+      max-width: 100%;
+    }
+    .bookmark-item[data-type="website"] .bookmark-image-placeholder {
+      height: 48px;
+      width: 48px;
+      font-size: 0.8em;
+    }
+    .bookmark-item[data-type="website"] .bookmark-image-placeholder::before {
+      content: "Icon";
+    }
+
+    .bookmark-item[data-type="youtube_channel"] .bookmark-image-container {
+      height: 80px;
+      /* width: 100%; Default is 100%, can be kept or made specific */
+    }
+    .bookmark-item[data-type="youtube_channel"] .bookmark-image {
+      object-fit: cover;
+    }
+    .bookmark-item[data-type="youtube_channel"] .bookmark-image-placeholder {
+      height: 80px;
+      font-size: 0.9em;
+    }
+    .bookmark-item[data-type="youtube_channel"] .bookmark-image-placeholder::before {
+      content: "Channel Art";
     }
 
     .bookmark-info {
@@ -404,10 +453,10 @@
   <div class="options-container"> <!-- Will add class 'sidebar-expanded' via JS -->
     <div class="sidebar">
       <h2><i class="icon-placeholder"></i><span class="link-text">Savee Menu</span></h2> <!-- Updated title -->
-      <a href="#" data-target="webpages"><i class="icon-placeholder"></i><span class="link-text">Webpages</span></a>
-      <a href="#" data-target="websites"><i class="icon-placeholder"></i><span class="link-text">Websites</span></a>
       <a href="#" data-target="videos"><i class="icon-placeholder"></i><span class="link-text">YouTube Videos</span></a>
       <a href="#" data-target="channels"><i class="icon-placeholder"></i><span class="link-text">YouTube Channels</span></a>
+      <a href="#" data-target="websites"><i class="icon-placeholder"></i><span class="link-text">Websites</span></a>
+      <a href="#" data-target="webpages"><i class="icon-placeholder"></i><span class="link-text">Webpages</span></a>
       <a href="#" data-target="selections"><i class="icon-placeholder"></i><span class="link-text">Selections &amp; Notes</span></a>
       <a href="#" data-target="settings"><i class="icon-placeholder"></i><span class="link-text">Settings</span></a>
     </div>

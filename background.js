@@ -222,39 +222,61 @@ function processChannelUrlFromVideoP1(dataP1, pendingDataP1) {
 
 
 // Function for Part 2: Refactor bookmarkVideoFromLink
-function processVideoBookmarkData(data, originalBookmarkBase) { // Renamed from processChannelExtraction
+function processVideoBookmarkData(data, originalBookmarkBase) {
   console.log("[BG_VideoLink] Processing video data from temp tab:", data, "Original base:", originalBookmarkBase);
-  let finalTitle = data.pageTitle || originalBookmarkBase.title;
-  // Ensure title is a string and not empty
-  if (typeof finalTitle !== 'string' || finalTitle.trim() === '') {
-      finalTitle = "YouTube Video"; // Fallback title
-      console.warn("[BG_VideoLink] Video title was empty or invalid, using default.");
-  }
 
-  let videoId = null;
+  let finalTitle = data.pageTitle; // Start with title from content script
+  let videoId = null; // Initialize videoId
+
   try {
     videoId = new URL(originalBookmarkBase.url).searchParams.get('v');
   } catch (e) {
     console.error("[BG_VideoLink] Error parsing video ID from URL:", originalBookmarkBase.url, e);
   }
 
+  // Improved Title Fallback Logic
+  if (!finalTitle || typeof finalTitle !== 'string' || finalTitle.trim() === '' ||
+      finalTitle.trim().toLowerCase() === 'youtube' ||
+      /^Fetching video: /.test(finalTitle.trim())) {
+
+    if (videoId) {
+      finalTitle = "YouTube Video: " + videoId;
+    } else {
+      // Fallback to URL if videoId cannot be parsed (should be rare for this context menu)
+      finalTitle = originalBookmarkBase.url;
+    }
+    console.warn("[BG_VideoLink] Used fallback title:", finalTitle);
+    originalBookmarkBase.isFallbackSave = true; // Indicate that some info might be less than ideal
+  }
+
+  // Ensure title is trimmed
+  finalTitle = finalTitle.trim();
+
+  // Thumbnail Fallback Logic (existing logic is good, just ensure videoId is available)
   let finalThumbnail = data.thumbnailUrl;
   if (!finalThumbnail && videoId) {
-    finalThumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    finalThumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`; // Standard fallback
     console.log("[BG_VideoLink] Used hqdefault.jpg fallback for video thumbnail:", finalThumbnail);
+    if (!data.thumbnailUrl) originalBookmarkBase.isFallbackSave = true; // Mark if content script didn't find one
   } else if (!finalThumbnail) {
     console.warn("[BG_VideoLink] No thumbnail could be determined for video.");
+    originalBookmarkBase.isFallbackSave = true; // Mark if no thumbnail at all
   }
   
-  const finalFavicon = data.faviconUrl; // This is the channel avatar from the video page
+  const finalFavicon = data.faviconUrl; // This is the channel avatar from the video page (or null)
 
   const videoBookmarkData = {
-    ...originalBookmarkBase,
-    title: finalTitle.trim(),
+    ...originalBookmarkBase, // This includes id, type, url, added_date
+    title: finalTitle, // Already trimmed
     thumbnailUrl: finalThumbnail,
-    faviconUrl: finalFavicon, // Channel avatar from video page, stored as favicon for the video bookmark
-    // Ensure 'url' and 'type' are correctly from originalBookmarkBase
+    faviconUrl: finalFavicon,
   };
+
+  // If isFallbackSave was set on originalBookmarkBase, ensure it propagates for notification
+  if (originalBookmarkBase.isFallbackSave) {
+      videoBookmarkData.isFallbackSave = true;
+  }
+
   console.log("[BG_VideoLink] Saving final video bookmark data:", JSON.stringify(videoBookmarkData));
   saveBookmarkToStorage(videoBookmarkData);
 }
