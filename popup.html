@@ -24,52 +24,77 @@
         color: #f0f0f0; /* Light text for dark theme */
          margin: 0;
        }
+       .bookmark-options {
+         margin-bottom: 10px; /* Reduced margin for tighter layout */
+       }
+       .button-row {
+         display: flex;
+         justify-content: space-between;
+         margin-bottom: 10px;
+       }
+       .button-row:last-child {
+         margin-bottom: 0; /* No margin for the last button row */
+       }
        .bookmark-options button {
-         display: block;
-         width: 100%;
-         padding: 11px 15px; /* Adjusted padding */
-         margin-bottom: 10px; /* Increased margin */
-         border: none;
+         /* display: block; no longer needed, flex handles it */
+         width: 48%; /* For two buttons per row */
+         padding: 10px 5px; /* Adjusted padding for side-by-side */
+         /* margin-bottom: 10px; Handled by button-row */
+         border: 1px solid transparent; /* Base border for all, transparent for solid ones */
         border-radius: 20px; /* Pill-shaped */
-        background-color: #3a3a3a; /* Darker button background */
-        color: #f0f0f0; /* Light text on buttons */
-         font-size: 13px; /* Slightly smaller */
-         font-weight: 500; /* Medium weight */
+        background-color: #3a3a3a; /* Default solid background */
+        color: #f0f0f0; /* Default light text */
+         font-size: 13px;
+         font-weight: 500;
          cursor: pointer;
-         transition: background-color 0.2s ease, transform 0.1s ease;
+         transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
          box-sizing: border-box;
          text-align: center;
        }
-       .bookmark-options button:hover {
-        background-color: #4a4a4a; /* Slightly lighter for hover */
-         transform: translateY(-1px); /* Subtle lift */
+       /* Solid button hover/active (default) */
+       .bookmark-options button:not(.outlined-button):hover {
+        background-color: #4a4a4a;
+         transform: translateY(-1px);
        }
-       .bookmark-options button:active {
-         transform: translateY(0px); /* Click effect */
-        background-color: #5a5a5a; /* Slightly lighter for active */
+       .bookmark-options button:not(.outlined-button):active {
+         transform: translateY(0px);
+        background-color: #5a5a5a;
        }
-       .bookmark-options button[disabled] { /* Style for disabled buttons */
-        background-color: #2a2a2a; /* Darker, muted for disabled */
-        color: #777777; /* Lighter grey text for disabled */
+       /* Outlined button style */
+       .outlined-button {
+         background-color: transparent;
+         border: 1px solid #88ccff; /* Accent color for border */
+         color: #88ccff; /* Accent color for text */
+       }
+       .outlined-button:hover {
+         background-color: rgba(136, 204, 255, 0.1); /* Slight accent background on hover */
+         border-color: #aaddff; /* Lighter accent for border */
+         color: #aaddff; /* Lighter accent for text */
+         transform: translateY(-1px);
+       }
+       .outlined-button:active {
+         background-color: rgba(136, 204, 255, 0.2); /* More pronounced accent background */
+         border-color: #aaddff;
+         color: #aaddff;
+         transform: translateY(0px);
+       }
+       /* Disabled state for all buttons */
+       .bookmark-options button[disabled] {
+        background-color: #2a2a2a !important; /* Important to override specific styles */
+        color: #777777 !important;
+        border-color: #2a2a2a !important; /* Ensure border matches background for disabled outlined */
          cursor: not-allowed;
         opacity: 0.6;
          transform: none;
        }
-       .bookmark-options button.action-page { /* Specific style if needed */
-         /* background-color: #28a745; Green */
-       }
-       .bookmark-options button.action-video {
-         /* background-color: #dc3545; Red */
-       }
-       .bookmark-options button.action-channel {
-         /* background-color: #ffc107; Yellow/Orange */
-       }
-       .bookmark-options button.action-website {
-         /* background-color: #17a2b8; Cyan */
-       }
+       /* ID-specific outlined styles (redundant if class .outlined-button is used, but kept for clarity) */
+       /* #bookmarkWebsiteBtn, #bookmarkChannelBtn { background-color: transparent; border: 1px solid #88ccff; color: #88ccff; } */
+       /* #bookmarkWebsiteBtn:hover, #bookmarkChannelBtn:hover { background-color: rgba(136, 204, 255, 0.1); border-color: #aaddff; color: #aaddff; } */
+       /* #bookmarkWebsiteBtn:active, #bookmarkChannelBtn:active { background-color: rgba(136, 204, 255, 0.2); } */
+
 
        #statusMessage {
-         margin-top: 10px;
+         margin-top: 15px; /* Adjusted margin due to tighter button layout */
          font-size: 12px;
          text-align: center;
          color: #cccccc; /* Lighter text for status message */
@@ -97,20 +122,24 @@
 </head>
 <body>
   <div class="header">
-    <h1>Advanced Bookmarker</h1>
+    <h1>Savee</h1>
   </div>
 
   <div class="bookmark-options">
-    <button id="bookmarkWebsiteBtn">Website</button>
-    <button id="bookmarkPageBtn">Webpage</button>
-    <button id="bookmarkVideoBtn">Video</button> <!-- Will be enabled/disabled based on context -->
-    <button id="bookmarkChannelBtn">Channel</button> <!-- Will be enabled/disabled based on context -->
+    <div class="button-row">
+      <button id="bookmarkWebsiteBtn" class="outlined-button">Website</button>
+      <button id="bookmarkPageBtn">Webpage</button>
+    </div>
+    <div class="button-row">
+      <button id="bookmarkVideoBtn">Video</button>
+      <button id="bookmarkChannelBtn" class="outlined-button">Channel</button>
+    </div>
   </div>
 
   <div id="statusMessage"></div>
 
   <div class="footer-actions">
-    <a href="#" id="viewBookmarksLink">View Saved Bookmarks</a>
+    <a href="#" id="viewBookmarksLink">View</a>
   </div>
 
   <script src="popup.js"></script>

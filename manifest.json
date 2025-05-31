@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Advanced Bookmarker",
+  "name": "Savee",
   "version": "0.1.0",
   "description": "An advanced bookmarking extension with features like thumbnail/icon extraction, drag & drop organization, and import/export.",
   "permissions": [

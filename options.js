@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const websitesList = document.getElementById('websitesList');
-  // const youtubeList = document.getElementById('youtubeList'); // Remove this
+  const webpagesList = document.getElementById('webpagesList'); // New list for type 'page'
+  const websitesList = document.getElementById('websitesList'); // For type 'website'
   const youtubeVideosList = document.getElementById('youtubeVideosList');
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
   const selectionsList = document.getElementById('selectionsList');
@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Sidebar navigation elements
   const sidebarLinks = document.querySelectorAll('.sidebar a');
   const contentSections = document.querySelectorAll('.main-content .content-section');
-  const mainContentTitle = document.querySelector('.main-content > h1'); // Main H1 title
+  const mainContentTitle = document.querySelector('.main-content > h1');
+  const sidebar = document.querySelector('.sidebar'); // Added
+  const optionsContainer = document.querySelector('.options-container'); // Added
 
   const dragDropToggle = document.getElementById('dragDropToggle');
   let dragDropEnabled = false;
@@ -17,8 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to update draggable attributes and visual cues (Added)
   function updateDraggableState(enabled) {
-    const lists = [websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Updated lists
+    const lists = [webpagesList, websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Added webpagesList
     lists.forEach(list => {
+      if (!list) return; // Add a guard in case a list element isn't found
       if (enabled) {
         list.classList.add('dnd-enabled');
       } else {
@@ -226,31 +229,37 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to render bookmarks to their respective lists
   function renderBookmarks(bookmarks) {
     // Clear existing placeholder or old bookmarks
+    webpagesList.innerHTML = ''; // Added
     websitesList.innerHTML = '';
-    youtubeVideosList.innerHTML = ''; // New list
-    youtubeChannelsList.innerHTML = ''; // New list
+    youtubeVideosList.innerHTML = '';
+    youtubeChannelsList.innerHTML = '';
     selectionsList.innerHTML = '';
 
     if (bookmarks.length === 0) {
-        websitesList.innerHTML = '<li class="empty-list-placeholder">No website bookmarks yet.</li>';
-        youtubeVideosList.innerHTML = '<li class="empty-list-placeholder">No YouTube video bookmarks yet.</li>'; // New list
-        youtubeChannelsList.innerHTML = '<li class="empty-list-placeholder">No YouTube channel bookmarks yet.</li>'; // New list
+        webpagesList.innerHTML = '<li class="empty-list-placeholder">No webpages bookmarked yet.</li>'; // Added
+        websitesList.innerHTML = '<li class="empty-list-placeholder">No website domain bookmarks yet.</li>'; // Clarified
+        youtubeVideosList.innerHTML = '<li class="empty-list-placeholder">No YouTube video bookmarks yet.</li>';
+        youtubeChannelsList.innerHTML = '<li class="empty-list-placeholder">No YouTube channel bookmarks yet.</li>';
         selectionsList.innerHTML = '<li class="empty-list-placeholder">No selections bookmarked yet.</li>';
-        // Still call addListEventListeners to ensure D&D listeners are on the empty lists
-        // if one list becomes empty after a delete.
-        // updateDraggableState and addListEventListeners are called after this block regardless
     }
 
     bookmarks.forEach(bookmark => {
       const bookmarkElement = createBookmarkElement(bookmark);
-      if (bookmark.type === 'youtube_video') {
-        youtubeVideosList.appendChild(bookmarkElement); // Changed
+      if (bookmark.type === 'page') { // New condition for 'page'
+        webpagesList.appendChild(bookmarkElement);
+      } else if (bookmark.type === 'website') { // Specific condition for 'website'
+        websitesList.appendChild(bookmarkElement);
+      } else if (bookmark.type === 'youtube_video') {
+        youtubeVideosList.appendChild(bookmarkElement);
       } else if (bookmark.type === 'youtube_channel') {
-        youtubeChannelsList.appendChild(bookmarkElement); // Changed
+        youtubeChannelsList.appendChild(bookmarkElement);
       } else if (bookmark.type === 'selection') {
         selectionsList.appendChild(bookmarkElement);
-      } else { // 'page' and 'website' types
-        websitesList.appendChild(bookmarkElement);
+      } else {
+        // Fallback for any other types or if type is undefined
+        // For now, let's put them in 'Webpages' or log an error
+        console.warn('Unknown bookmark type or type not handled:', bookmark.type, bookmark);
+        // webpagesList.appendChild(bookmarkElement); // Optional: default to webpages
       }
     });
     
@@ -278,10 +287,53 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  let activeConfirmationContext = null; // { originalDeleteBtn, yesBtn, noBtn, actionsDiv }
+
+  function resetActiveConfirmation() {
+    if (activeConfirmationContext) {
+      activeConfirmationContext.originalDeleteBtn.style.display = '';
+      if (activeConfirmationContext.yesBtn.parentNode) {
+        activeConfirmationContext.yesBtn.remove();
+      }
+      if (activeConfirmationContext.noBtn.parentNode) {
+        activeConfirmationContext.noBtn.remove();
+      }
+      activeConfirmationContext = null;
+    }
+  }
+
   function handleDeleteBookmark(event) {
     if (event.target.classList.contains('deleteBtn')) {
-      const bookmarkId = event.target.getAttribute('data-id');
-      if (confirm('Are you sure you want to delete this bookmark?')) {
+      const originalDeleteBtn = event.target;
+      const bookmarkId = originalDeleteBtn.getAttribute('data-id');
+      const actionsDiv = originalDeleteBtn.closest('.bookmark-actions');
+
+      // If this button's confirmation is already active, do nothing (or could toggle it off)
+      if (activeConfirmationContext && activeConfirmationContext.originalDeleteBtn === originalDeleteBtn) {
+        // Optional: could make clicking active delete button again act as "No"
+        // resetActiveConfirmation();
+        return;
+      }
+
+      // Reset any other active confirmation
+      resetActiveConfirmation();
+
+      originalDeleteBtn.style.display = 'none';
+
+      const yesBtn = document.createElement('button');
+      yesBtn.textContent = 'Yes';
+      yesBtn.classList.add('confirm-delete-yes');
+
+      const noBtn = document.createElement('button');
+      noBtn.textContent = 'No';
+      noBtn.classList.add('confirm-delete-no');
+
+      actionsDiv.appendChild(yesBtn);
+      actionsDiv.appendChild(noBtn);
+
+      activeConfirmationContext = { originalDeleteBtn, yesBtn, noBtn, actionsDiv };
+
+      yesBtn.addEventListener('click', function() {
         chrome.storage.local.get({ bookmarks: [] }, function(data) {
           let bookmarks = data.bookmarks.filter(bm => bm.id !== bookmarkId);
           chrome.storage.local.set({ bookmarks: bookmarks }, function() {
@@ -289,18 +341,26 @@ document.addEventListener('DOMContentLoaded', function() {
               console.error("Error deleting bookmark:", chrome.runtime.lastError);
             } else {
               console.log("Bookmark deleted:", bookmarkId);
-              // loadAndRenderBookmarks(); // Re-render will be handled by storage.onChanged
+              // UI update will be handled by storage.onChanged -> loadAndRenderBookmarks
             }
+            // Clean up confirmation state regardless of success/failure of storage operation,
+            // as the action is now "done" from user perspective.
+            resetActiveConfirmation();
           });
         });
-      }
+      });
+
+      noBtn.addEventListener('click', function() {
+        resetActiveConfirmation();
+      });
     }
   }
   
   // Renamed and expanded function (Modified)
   function addListEventListeners() {
-    const lists = [websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Updated lists
+    const lists = [webpagesList, websitesList, youtubeVideosList, youtubeChannelsList, selectionsList]; // Added webpagesList
     lists.forEach(list => {
+      if (!list) return; // Add a guard
       // Delete listener (event delegation)
       // Remove first to prevent duplicates if this function is ever called multiple times on the same list
       list.removeEventListener('click', handleDeleteBookmark); 
@@ -335,6 +395,16 @@ document.addEventListener('DOMContentLoaded', function() {
     dragDropToggle.checked = dragDropEnabled;
     updateDraggableState(dragDropEnabled); 
   });
+
+  // --- Collapsible Sidebar JS ---
+  if (sidebar && optionsContainer) {
+    sidebar.addEventListener('mouseenter', function() {
+      optionsContainer.classList.add('sidebar-expanded');
+    });
+    sidebar.addEventListener('mouseleave', function() {
+      optionsContainer.classList.remove('sidebar-expanded');
+    });
+  }
 
   // --- SIDEBAR NAVIGATION ---
   function setActiveContent(targetId) {
@@ -377,9 +447,38 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initial load & State Restoration
   loadAndRenderBookmarks(); // Load bookmarks first
 
-  // Restore last active tab or default to 'websites'
-  chrome.storage.local.get({ lastActiveOptionsTab: 'websites' }, function(data) {
-    setActiveContent(data.lastActiveOptionsTab);
+  // Restore last active tab or default to 'videos'
+  chrome.storage.local.get({ lastActiveOptionsTab: 'videos' }, function(data) {
+    // If the stored last active tab was 'websites', and it's now split,
+    // defaulting to 'webpages' is a reasonable behavior.
+    // Or, explicitly check if data.lastActiveOptionsTab is 'websites' and change to 'webpages'
+    let initialTab = data.lastActiveOptionsTab;
+    // The logic below was to handle the transition from a single 'websites' tab to 'webpages'/'websites' split.
+    // It might not be strictly necessary anymore if the default is 'videos' and HTML has no static active class.
+    // However, keeping it won't harm, as it tries to find an active class in HTML if the stored one is problematic.
+    // If no active class is in HTML (which will be the case after next step), it will use the default from storage.get ('videos').
+    const activeSidebarLink = document.querySelector('.sidebar a.active');
+    if (activeSidebarLink && initialTab !== activeSidebarLink.dataset.target) {
+        // This case is unlikely if HTML defaults are removed.
+        // If HTML had a static active class different from 'videos' (the new default),
+        // this would ensure JS overrides it with the 'videos' default.
+        // However, the goal is to remove HTML static active classes.
+    }
+
+    // If no active class is set by HTML (which will be the desired state),
+    // initialTab (from storage or the new 'videos' default) will be used.
+    // If a user had a *different* tab stored (e.g. 'selections'), that should still be respected.
+    // The only case we want to override is if the *default from storage.get* needs to be applied
+    // because there's no other valid stored preference.
+
+    // Check if the initialTab (from storage or default 'videos') corresponds to an existing sidebar link.
+    // If not, it might be an old value, so fall back to the new default 'videos'.
+    const validTargets = Array.from(sidebarLinks).map(link => link.dataset.target);
+    if (!validTargets.includes(initialTab)) {
+        initialTab = 'videos'; // Fallback to new default if stored tab is no longer valid
+    }
+
+    setActiveContent(initialTab);
   });
 
   // Listener for changes in storage (bookmarks, settings, etc.)

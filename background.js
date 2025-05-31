@@ -8,14 +8,14 @@ chrome.runtime.onInstalled.addListener(function() {
     // Context menu for general pages
     chrome.contextMenus.create({
       id: "bookmarkPage",
-      title: "Bookmark this page",
+      title: "Savee this page",
       contexts: ["page"]
     });
 
     // Context menu for YouTube videos
     chrome.contextMenus.create({
       id: "bookmarkYouTubeVideo",
-      title: "Bookmark this YouTube video",
+      title: "Savee this YouTube video",
       contexts: ["video"],
       targetUrlPatterns: ["*://*.youtube.com/watch*", "*://*.youtube.com/embed/*"]
     });
@@ -23,7 +23,7 @@ chrome.runtime.onInstalled.addListener(function() {
     // Context menu for YouTube channels (on links that are channel URLs)
     chrome.contextMenus.create({
       id: "bookmarkYouTubeChannel",
-      title: "Bookmark YouTube Channel", 
+      title: "Savee YouTube Channel",
       contexts: ["link"],
       targetUrlPatterns: ["*://*.youtube.com/channel/*", "*://*.youtube.com/@*"]
     });
@@ -31,27 +31,27 @@ chrome.runtime.onInstalled.addListener(function() {
     // Context menu for any selected text
     chrome.contextMenus.create({
       id: "bookmarkSelection",
-      title: "Bookmark selection",
+      title: "Savee selection",
       contexts: ["selection"]
     });
 
     chrome.contextMenus.create({
       id: "bookmarkVideoFromLink",
-      title: "Bookmark YouTube Video (from link)",
+      title: "Savee YouTube Video (from link)",
       contexts: ["link"],
       documentUrlPatterns: ["*://*.youtube.com/*"] 
     });
 
     chrome.contextMenus.create({
       id: "bookmarkChannelFromLink",
-      title: "Bookmark Channel (from link)",
+      title: "Savee Channel (from link)",
       contexts: ["link"],
       documentUrlPatterns: ["*://*.youtube.com/*"] 
     });
 
     chrome.contextMenus.create({
       id: "bookmarkWebsiteFromPage",
-      title: "Bookmark this Website (Domain)",
+      title: "Savee this Website (Domain)",
       contexts: ["page"]
     });
 

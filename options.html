@@ -48,46 +48,85 @@
       height: 100vh;
     }
     .sidebar {
-      width: 220px;
+      width: 60px; /* Narrow by default */
       background-color: var(--theme-bg-secondary);
-      padding: 20px;
+      padding: 15px; /* Adjusted padding for narrow view */
       height: 100%;
       box-shadow: 2px 0 5px var(--theme-shadow-color);
       border-right: 1px solid var(--theme-border-color);
       display: flex;
       flex-direction: column;
+      transition: width 0.3s ease;
+      overflow-x: hidden; /* Hide text that overflows during transition */
     }
-    .sidebar h2 { /* Optional title for sidebar */
+    .sidebar:hover {
+      width: 220px; /* Expanded width */
+    }
+    .sidebar h2 {
       font-size: 1.2em;
       color: var(--theme-text-primary);
       margin-top: 0;
       margin-bottom: 20px;
       text-align: center;
+      white-space: nowrap; /* Prevent title from wrapping */
+    }
+    .sidebar h2 .link-text { /* Assuming h2 text is also wrapped for consistency */
+      display: none;
+    }
+    .sidebar:hover h2 .link-text {
+      display: inline;
+    }
+     .sidebar:hover h2 .icon-placeholder { /* If icons were used for title too */
+      margin-right: 10px;
     }
     .sidebar a {
-      display: block;
-      padding: 10px 15px;
+      display: flex; /* Use flex for icon and text alignment */
+      align-items: center; /* Vertically center icon and text */
+      padding: 10px; /* Adjusted padding */
       color: var(--theme-text-primary);
       text-decoration: none;
       border-radius: 6px;
       margin-bottom: 8px;
       transition: background-color 0.2s ease, color 0.2s ease;
+      white-space: nowrap; /* Prevent link text from wrapping */
+    }
+    .sidebar a .link-text {
+      display: none; /* Text hidden by default */
+      margin-left: 10px; /* Space between icon (if any) and text */
+    }
+    .sidebar:hover a .link-text {
+      display: inline; /* Text visible on hover */
+    }
+     .sidebar a .icon-placeholder { /* Basic placeholder for icon alignment */
+      display: inline-block;
+      width: 20px; /* Adjust as needed */
+      height: 20px; /* Adjust as needed */
+      /* background-color: #ccc; In case you want to visualize it */
+      flex-shrink: 0; /* Prevent icon from shrinking */
+    }
+    .sidebar:hover a {
+      padding: 10px 15px; /* Restore original padding on hover if needed */
     }
     .sidebar a:hover {
       background-color: var(--theme-accent-primary);
-      color: var(--theme-bg-primary); /* Or a contrasting text color for the accent */
+      color: var(--theme-bg-primary);
     }
     .sidebar a.active {
       background-color: var(--theme-accent-secondary);
-      color: #ffffff; /* Ensure contrast on active link */
+      color: #ffffff;
       font-weight: bold;
     }
     .main-content {
       flex-grow: 1;
       padding: 20px;
       overflow-y: auto;
-      height: 100%; /* Ensure it takes full height to enable overflow-y */
-      box-sizing: border-box; /* Include padding in height calculation */
+      height: 100%;
+      box-sizing: border-box;
+      margin-left: 60px; /* Default margin for narrow sidebar */
+      transition: margin-left 0.3s ease;
+    }
+    .options-container.sidebar-expanded .main-content { /* JS will toggle this class */
+      margin-left: 220px;
     }
     .content-section {
       display: none; /* Hidden by default */
@@ -246,6 +285,33 @@
     .bookmark-actions button:hover {
       background-color: var(--theme-button-hover-bg);
     }
+    .bookmark-actions .confirm-delete-yes,
+    .bookmark-actions .confirm-delete-no {
+      padding: 4px 8px; /* Smaller padding for confirm buttons */
+      font-size: 0.8em; /* Smaller font */
+      margin-left: 5px;
+      /* border-radius is inherited from .bookmark-actions button */
+      /* transition is inherited */
+    }
+    .confirm-delete-yes {
+      background-color: var(--theme-accent-secondary); /* Using a theme variable, could be a red */
+      color: white; /* Ensure contrast */
+      border-color: var(--theme-accent-secondary);
+    }
+    .confirm-delete-yes:hover {
+      background-color: #c82333; /* A common darker red for delete confirm hover */
+      border-color: #bd2130;
+    }
+    /* .confirm-delete-no uses default button styles, so no specific overrides needed unless desired */
+    /* For instance, if you want 'No' to look less prominent than default action button: */
+    .confirm-delete-no {
+       /* background-color: var(--theme-button-bg); */ /* Already default */
+       /* color: var(--theme-button-text); */ /* Already default */
+       /* border: 1px solid var(--theme-border-color); */ /* Already default */
+    }
+    .confirm-delete-no:hover {
+      /* background-color: var(--theme-button-hover-bg); */ /* Already default */
+    }
     
     /* D&D Styles */
     .dnd-enabled .bookmark-item {
@@ -335,20 +401,28 @@
   </style>
 </head>
 <body>
-  <div class="options-container">
+  <div class="options-container"> <!-- Will add class 'sidebar-expanded' via JS -->
     <div class="sidebar">
-      <h2>Bookmarks Menu</h2>
-      <a href="#" data-target="websites" class="active">Websites &amp; Pages</a>
-      <a href="#" data-target="videos">YouTube Videos</a>
-      <a href="#" data-target="channels">YouTube Channels</a>
-      <a href="#" data-target="selections">Selections &amp; Notes</a>
-      <a href="#" data-target="settings">Settings</a>
+      <h2><i class="icon-placeholder"></i><span class="link-text">Savee Menu</span></h2> <!-- Updated title -->
+      <a href="#" data-target="webpages"><i class="icon-placeholder"></i><span class="link-text">Webpages</span></a>
+      <a href="#" data-target="websites"><i class="icon-placeholder"></i><span class="link-text">Websites</span></a>
+      <a href="#" data-target="videos"><i class="icon-placeholder"></i><span class="link-text">YouTube Videos</span></a>
+      <a href="#" data-target="channels"><i class="icon-placeholder"></i><span class="link-text">YouTube Channels</span></a>
+      <a href="#" data-target="selections"><i class="icon-placeholder"></i><span class="link-text">Selections &amp; Notes</span></a>
+      <a href="#" data-target="settings"><i class="icon-placeholder"></i><span class="link-text">Settings</span></a>
     </div>
     <div class="main-content">
       <h1>My Bookmarks</h1> <!-- General title for the main content area -->
 
-      <div id="content-websites" class="content-section active-content">
-        <h2 class="section-title">Websites &amp; Pages</h2>
+      <div id="content-webpages" class="content-section">
+        <h2 class="section-title">Webpages</h2>
+        <ul id="webpagesList" class="bookmark-list">
+          <!-- Dynamically filled -->
+        </ul>
+      </div>
+
+      <div id="content-websites" class="content-section">
+        <h2 class="section-title">Websites</h2>
         <ul id="websitesList" class="bookmark-list">
           <!-- Placeholder or dynamically filled -->
         </ul>
