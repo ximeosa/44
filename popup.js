@@ -153,7 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
       url: url,
       faviconUrl: faviconUrl || null,
       thumbnailUrl: thumbnailUrl || null,
-      added_date: new Date().toISOString()
+      added_date: new Date().toISOString(),
+      folderId: 'root' // Added default folderId
     };
 
     // No need for type detection here as it's passed in.

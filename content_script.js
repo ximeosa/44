@@ -1,3 +1,19 @@
+// Helper function to transform YouTube channel image URLs
+function transformYouTubeChannelImageUrl(urlString) {
+  if (urlString && urlString.includes("yt3.ggpht.com/")) {
+    // Regex to find existing size parameter (e.g., =s48, =s88, =s100) and replace it
+    // It also handles cases with -c-k-c0x00ffffff-no-rj or similar suffixes
+    // and ensures it doesn't transform if it's already =s900 (to avoid re-logging)
+    const sizePattern = /(=s\d+)(-c-k-c0x00ffffff-no-rj\w*)?$/;
+    if (urlString.match(sizePattern) && !urlString.includes("=s900")) {
+      const transformedUrl = urlString.replace(sizePattern, "=s900$2");
+      // console.log('[CS_TransformImg] Transformed YT channel image URL:', urlString, '->', transformedUrl);
+      return transformedUrl;
+    }
+  }
+  return urlString; // Return original if no transformation applied
+}
+
 // Function to extract initial page info (favicon, main thumbnail, etc.)
 function extractInitialPageInfo() {
   let result = {
@@ -97,11 +113,11 @@ function extractInitialPageInfo() {
           for (const selector of channelImgSelectors_P1) {
               channelImg = document.querySelector(selector);
               if (channelImg && channelImg.src) {
-                  currentResultToUpdate.faviconUrl = channelImg.src; // Overwrite with specific avatar
+                  currentResultToUpdate.faviconUrl = transformYouTubeChannelImageUrl(channelImg.src); // Transformed
                   specificFaviconFound = true;
                   currentResultToUpdate.debug_cs_channelImgFound = true;
-                  currentResultToUpdate.debug_cs_channelImgSrc = channelImg.src;
-                  console.log('[CS_ExtractInfo_VideoPage_P1Func] Channel Avatar (favicon) found with selector:', selector, 'Src:', currentResultToUpdate.faviconUrl);
+                  currentResultToUpdate.debug_cs_channelImgSrc = currentResultToUpdate.faviconUrl; // Store transformed
+                  console.log('[CS_ExtractInfo_VideoPage_P1Func] Channel Avatar (favicon) found and transformed with selector:', selector, 'Src:', currentResultToUpdate.faviconUrl);
                   break;
               } else {
                   console.log('[CS_ExtractInfo_VideoPage_P1Func] Channel Avatar (favicon) NOT found with selector:', selector);
@@ -284,10 +300,11 @@ function extractInitialPageInfo() {
     }
 
     if (channelIcon && channelIcon.src) {
-      result.faviconUrl = channelIcon.src; 
-      result.thumbnailUrl = channelIcon.src; 
+      result.faviconUrl = transformYouTubeChannelImageUrl(channelIcon.src); // Transformed
+      // Initially set thumbnail to transformed avatar, in case banner isn't found or is same.
+      result.thumbnailUrl = result.faviconUrl;
       result.debug_cs_channelImgFound = true;
-      result.debug_cs_channelImgSrc = channelIcon.src;
+      result.debug_cs_channelImgSrc = result.faviconUrl; // Store transformed
       
       const channelBannerSelectors = [
         '#banner.ytd-c4-tabbed-header-renderer img',
@@ -305,10 +322,11 @@ function extractInitialPageInfo() {
       }
 
       if(channelBanner && channelBanner.src && channelBanner.src.startsWith('http')){
-        result.thumbnailUrl = channelBanner.src;
-        console.log('[CS_ExtractInfo_ChannelPage] Channel banner successfully updated thumbnailUrl.');
+        // Only transform if it's a ggpht URL, banners can be diverse.
+        result.thumbnailUrl = transformYouTubeChannelImageUrl(channelBanner.src); // Transformed
+        console.log('[CS_ExtractInfo_ChannelPage] Channel banner successfully updated (and transformed if applicable) thumbnailUrl.');
       } else {
-        console.log('[CS_ExtractInfo_ChannelPage] Channel banner not found or src invalid, thumbnailUrl remains avatar.');
+        console.log('[CS_ExtractInfo_ChannelPage] Channel banner not found or src invalid, thumbnailUrl remains transformed avatar.');
       }
     } else {
         console.log('[CS_ExtractInfo_ChannelPage] Channel avatar not found.');
@@ -508,12 +526,13 @@ function parseYouTubeLinkPreview(linkUrl) {
             '#avatar-link yt-img-shadow img, a.yt-simple-endpoint yt-img-shadow#avatar img, .ytd-channel-name yt-img-shadow img'
         );
         if (channelAvatarInPreview && channelAvatarInPreview.src) {
-            details.channelIconUrl = channelAvatarInPreview.src;
-            console.log("[CS_ParseLink_Chan] Extracted channelIconUrl from preview:", details.channelIconUrl); 
+            details.channelIconUrl = transformYouTubeChannelImageUrl(channelAvatarInPreview.src); // Transformed
+            console.log("[CS_ParseLink_Chan] Extracted and transformed channelIconUrl from preview:", details.channelIconUrl);
         } else {
             console.warn("[CS_ParseLink_Chan] Could not find channelIconUrl in preview."); 
         }
         // Ensure channelIconUrl is absolute (though src from img tags usually are)
+        // The transform function itself doesn't make it absolute, so this existing logic is still useful if transform returns original.
         if (details.channelIconUrl && !details.channelIconUrl.startsWith('http') && !details.channelIconUrl.startsWith('data:') && window.location.origin) {
              try { details.channelIconUrl = new URL(details.channelIconUrl, window.location.origin).href; } catch (e) { console.warn("[CS_ParseLink_Chan] Failed to make channelIconUrl absolute:", e); details.channelIconUrl = null; }
         }

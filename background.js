@@ -120,7 +120,8 @@ function processDefinitiveChannelDataP2(dataP2, originalBookmarkBaseP2) {
     faviconUrl: finalFavicon,
     thumbnailUrl: finalThumbnail,
     added_date: originalBookmarkBaseP2.added_date,
-    sourceVideoUrl: originalBookmarkBaseP2.originalVideoUrl 
+    sourceVideoUrl: originalBookmarkBaseP2.originalVideoUrl,
+    folderId: originalBookmarkBaseP2.folderId || 'root' // Propagate or default
   };
   console.log("[BG_ChanFromLink_P2] Saving final definitive channel bookmark data:", JSON.stringify(finalChannelBookmark));
   saveBookmarkToStorage(finalChannelBookmark);
@@ -145,7 +146,8 @@ function processChannelUrlFromVideoP1(dataP1, pendingDataP1) {
       thumbnailUrl: dataP1.faviconUrl, 
       added_date: pendingDataP1.bookmarkBase.added_date,
       originalVideoUrl: originalVideoUrl, 
-      iconFromVideo: dataP1.faviconUrl 
+      iconFromVideo: dataP1.faviconUrl,
+      folderId: pendingDataP1.bookmarkBase.folderId || 'root' // Propagate
     };
 
     console.log("[BG_ChanFromLink_P2] Creating temp tab for channel URL:", channelUrl);
@@ -158,6 +160,7 @@ function processChannelUrlFromVideoP1(dataP1, pendingDataP1) {
             title: bookmarkBaseP2.title, 
             faviconUrl: bookmarkBaseP2.iconFromVideo, thumbnailUrl: bookmarkBaseP2.iconFromVideo,
             added_date: bookmarkBaseP2.added_date, sourceVideoUrl: bookmarkBaseP2.originalVideoUrl,
+            folderId: bookmarkBaseP2.folderId || 'root', // Propagate
             isFallbackSave: true 
         };
         saveBookmarkToStorage(fallbackChannelBookmark);
@@ -253,6 +256,7 @@ function processVideoBookmarkData(data, originalBookmarkBase) {
   finalTitle = finalTitle.trim();
 
   // Thumbnail Fallback Logic (existing logic is good, just ensure videoId is available)
+  // Note: originalBookmarkBase already contains folderId: 'root' from context menu click
   let finalThumbnail = data.thumbnailUrl;
   if (!finalThumbnail && videoId) {
     finalThumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`; // Standard fallback
@@ -266,7 +270,7 @@ function processVideoBookmarkData(data, originalBookmarkBase) {
   const finalFavicon = data.faviconUrl; // This is the channel avatar from the video page (or null)
 
   const videoBookmarkData = {
-    ...originalBookmarkBase, // This includes id, type, url, added_date
+    ...originalBookmarkBase, // This includes id, type, url, added_date, and folderId
     title: finalTitle, // Already trimmed
     thumbnailUrl: finalThumbnail,
     faviconUrl: finalFavicon,
@@ -417,7 +421,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
         
         const fullBookmark = {
-            ...bookmarkBase,
+            ...bookmarkBase, // Includes folderId from original bookmarkBase
             title: updatedTitle,
             url: bookmarkBase.url, // Keep original URL for direct channel links
             faviconUrl: updatedFaviconUrl,
@@ -430,7 +434,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
       } else { // For non-temp tabs (e.g., popup initiated, page context)
         console.log("Background received page info from content script (non-temp tab):", request.data, "for tab:", tabId);
-        const { bookmarkBase, callback } = pending;
+        const { bookmarkBase, callback } = pending; // bookmarkBase here already has folderId
         let updatedTitle = request.data.pageTitle || bookmarkBase.title;
         let updatedFaviconUrl = request.data.faviconUrl || null;
         let updatedThumbnailUrl = request.data.thumbnailUrl || null;
@@ -442,7 +446,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         // Potentially other types could be handled here if needed for non-temp tabs
         
         const fullBookmark = {
-            ...bookmarkBase,
+            ...bookmarkBase, // Includes folderId
             title: updatedTitle,
             url: request.data.pageUrl || bookmarkBase.url, // Use pageUrl from content script if available
             faviconUrl: updatedFaviconUrl,
@@ -476,7 +480,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (bookmarkBase.type === 'youtube_video') {
             finalBookmarkData.title = details.videoTitle || bookmarkBase.title;
             finalBookmarkData.thumbnailUrl = details.videoThumbnailUrl || null;
-            finalBookmarkData.faviconUrl = details.channelIconUrl || null; 
+            finalBookmarkData.faviconUrl = details.channelIconUrl || null;
+            // folderId is already in bookmarkBase, so it's in finalBookmarkData via spread
         } 
         // No 'youtube_channel' case here anymore as that's handled by the temp tab flow or new video-to-channel flow
         
@@ -511,6 +516,7 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     url: pageUrl, 
     type: 'page', 
     added_date: new Date().toISOString(),
+    folderId: 'root', // Added default folderId here
     text: null,
     faviconUrl: null,
     thumbnailUrl: null

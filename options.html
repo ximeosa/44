@@ -180,6 +180,79 @@
          margin-top: 0; /* Already part of settings section, so no extra top margin */
     }
 
+    .create-folder-btn {
+      padding: 8px 12px;
+      background-color: var(--theme-accent-primary);
+      color: var(--theme-button-text); /* Match text color for accents or choose contrasting */
+      border: 1px solid var(--theme-accent-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-size: 0.9em;
+      margin-bottom: 15px; /* Space below button */
+    }
+    .create-folder-btn:hover {
+      background-color: var(--theme-accent-secondary); /* Or a darker shade of accent */
+    }
+    body[data-theme="dark_mode"] .create-folder-btn {
+        color: var(--theme-bg-primary); /* Ensure contrast on dark theme */
+    }
+
+
+    .sub-heading {
+      font-size: 0.9em;
+      color: var(--theme-text-secondary);
+      margin-top: 20px; /* Increased space above sub-heading */
+      margin-bottom: 10px; /* Increased space below sub-heading */
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600; /* Slightly bolder */
+      border-bottom: 1px solid var(--theme-border-color); /* Optional: separator line */
+      padding-bottom: 5px; /* Padding for the separator line */
+    }
+    .folder-list {
+      list-style-type: none;
+      padding: 0;
+      margin-bottom: 30px; /* More space after folder list */
+      display: grid; /* Using grid for folders as well */
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust minmax for folder items */
+      gap: 10px; /* Gap between folder items */
+    }
+    .folder-item {
+      background-color: var(--theme-button-bg);
+      padding: 12px 15px; /* Increased padding */
+      /* margin-bottom: 8px; Removed as grid gap handles spacing */
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--theme-border-color);
+      text-align: center; /* Center folder name */
+      font-weight: 500;
+      color: var(--theme-text-primary);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .folder-item:hover {
+      background-color: var(--theme-button-hover-bg);
+      box-shadow: 0 2px 4px var(--theme-shadow-color);
+    }
+    .folder-item.drag-over {
+      background-color: var(--theme-accent-secondary) !important; /* Use !important to override hover if necessary */
+      opacity: 0.8;
+      border-style: dashed;
+      border-color: var(--theme-text-primary); /* Make border more visible */
+    }
+    .nested-bookmark-list {
+      margin-top: 10px; /* Space between folder name and its bookmarks */
+      padding-left: 15px; /* Indent nested bookmarks slightly */
+      /* Nested lists will use the same .bookmark-list grid styles */
+    }
+    .empty-folder-placeholder { /* Optional: if you add placeholders to empty folders */
+        font-size: 0.9em;
+        color: var(--theme-text-secondary);
+        text-align: center;
+        padding: 10px;
+    }
+
+
     .bookmark-list {
       list-style-type: none;
       padding: 0;
@@ -465,37 +538,52 @@
 
       <div id="content-webpages" class="content-section">
         <h2 class="section-title">Webpages</h2>
-        <ul id="webpagesList" class="bookmark-list">
-          <!-- Dynamically filled -->
-        </ul>
+        <button class="create-folder-btn" data-section-type="webpages">Create Folder</button>
+        <div class="section-controls"></div>
+        <h3 class="sub-heading">Folders</h3>
+        <ul id="webpages-foldersList" class="folder-list"></ul>
+        <h3 class="sub-heading">My Webpages</h3>
+        <ul id="webpagesList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-websites" class="content-section">
         <h2 class="section-title">Websites</h2>
-        <ul id="websitesList" class="bookmark-list">
-          <!-- Placeholder or dynamically filled -->
-        </ul>
+        <button class="create-folder-btn" data-section-type="websites">Create Folder</button>
+        <div class="section-controls"></div>
+        <h3 class="sub-heading">Folders</h3>
+        <ul id="websites-foldersList" class="folder-list"></ul>
+        <h3 class="sub-heading">My Websites</h3>
+        <ul id="websitesList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-videos" class="content-section">
         <h2 class="section-title">YouTube Videos</h2>
-        <ul id="youtubeVideosList" class="bookmark-list">
-          <!-- Dynamically filled -->
-        </ul>
+        <button class="create-folder-btn" data-section-type="videos">Create Folder</button>
+        <div class="section-controls"></div>
+        <h3 class="sub-heading">Folders</h3>
+        <ul id="videos-foldersList" class="folder-list"></ul>
+        <h3 class="sub-heading">My Videos</h3>
+        <ul id="youtubeVideosList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-channels" class="content-section">
         <h2 class="section-title">YouTube Channels</h2>
-        <ul id="youtubeChannelsList" class="bookmark-list">
-          <!-- Dynamically filled -->
-        </ul>
+        <button class="create-folder-btn" data-section-type="channels">Create Folder</button>
+        <div class="section-controls"></div>
+        <h3 class="sub-heading">Folders</h3>
+        <ul id="channels-foldersList" class="folder-list"></ul>
+        <h3 class="sub-heading">My Channels</h3>
+        <ul id="youtubeChannelsList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-selections" class="content-section">
         <h2 class="section-title">Selections &amp; Notes</h2>
-        <ul id="selectionsList" class="bookmark-list">
-          <!-- Dynamically filled -->
-        </ul>
+        <button class="create-folder-btn" data-section-type="selections">Create Folder</button>
+        <div class="section-controls"></div>
+        <h3 class="sub-heading">Folders</h3>
+        <ul id="selections-foldersList" class="folder-list"></ul>
+        <h3 class="sub-heading">My Selections</h3>
+        <ul id="selectionsList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-settings" class="content-section">
