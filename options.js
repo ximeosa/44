@@ -5,60 +5,55 @@ document.addEventListener('DOMContentLoaded', function() {
   const youtubeChannelsList = document.getElementById('youtubeChannelsList');
   const selectionsList = document.getElementById('selectionsList');
 
-  // Folder list elements
-  const webpagesFoldersList = document.getElementById('webpages-foldersList');
-  const websitesFoldersList = document.getElementById('websites-foldersList');
-  const videosFoldersList = document.getElementById('videos-foldersList');
-  const channelsFoldersList = document.getElementById('channels-foldersList');
-  const selectionsFoldersList = document.getElementById('selections-foldersList');
-
   // Sidebar navigation elements
   const sidebarLinks = document.querySelectorAll('.sidebar a');
   const contentSections = document.querySelectorAll('.main-content .content-section');
   const mainContentTitle = document.querySelector('.main-content > h1');
-  const sidebar = document.querySelector('.sidebar'); // Added
-  const optionsContainer = document.querySelector('.options-container'); // Added
+  const sidebar = document.querySelector('.sidebar');
+  const optionsContainer = document.querySelector('.options-container');
 
-  const dragDropToggle = document.getElementById('dragDropToggle');
+  // D&D Toggle will be queried after HTML modification ensures it's in its new place.
+  // let dragDropToggle = document.getElementById('dragDropToggle');
+  let dragDropToggle; // To be assigned in DOMContentLoaded after HTML is ready
+
   let dragDropEnabled = false;
   let draggedItem = null;
   let originalBookmarksOrder = [];
 
   // Function to update draggable attributes and visual cues
   function updateDraggableState(enabled) {
-    const allBookmarkItems = document.querySelectorAll('.bookmark-item'); // Get all bookmark items, nested or not
-    const allBookmarkLists = document.querySelectorAll('.bookmark-list'); // Get all bookmark lists
-
-    allBookmarkLists.forEach(list => {
+    const bookmarkLists = [webpagesList, websitesList, youtubeVideosList, youtubeChannelsList, selectionsList];
+    bookmarkLists.forEach(list => {
+      if (!list) return;
       if (enabled) {
         list.classList.add('dnd-enabled');
       } else {
         list.classList.remove('dnd-enabled');
       }
-    });
-
-    allBookmarkItems.forEach(item => {
-        item.setAttribute('draggable', enabled ? 'true' : 'false');
+      Array.from(list.children).forEach(item => {
+        if (item.classList.contains('bookmark-item')) {
+          item.setAttribute('draggable', enabled ? 'true' : 'false');
+        }
+      });
     });
   }
 
   // --- DRAG AND DROP HANDLERS ---
   function handleDragStart(e) {
     if (!dragDropEnabled || !e.target.classList.contains('bookmark-item')) {
-      e.preventDefault(); // Prevent dragging non-bookmark items or if D&D is off
+      e.preventDefault();
       return;
     }
     draggedItem = e.target;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', draggedItem.dataset.id);
-    e.dataTransfer.setData('text/type', draggedItem.dataset.type); // Store type for cross-section check
-    e.dataTransfer.setData('text/sourcefolder', draggedItem.closest('.folder-item')?.dataset.id || 'root');
+    // No longer setting text/type or text/sourcefolder as folders are removed
 
     setTimeout(() => {
       if (draggedItem) draggedItem.classList.add('dragging');
     }, 0);
     
-    chrome.storage.local.get({ bookmarks: [] }, function(data) { // For reordering logic
+    chrome.storage.local.get({ bookmarks: [] }, function(data) {
       originalBookmarksOrder = data.bookmarks.map(bm => bm.id);
     });
   }
@@ -68,50 +63,21 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
 
-    const draggedItemType = draggedItem.dataset.type;
-    let validTargetFound = false;
-
-    // Check if over a bookmark item (for reordering)
-    const targetBookmarkItem = e.target.closest('.bookmark-item');
-    if (targetBookmarkItem && targetBookmarkItem !== draggedItem) {
-        const targetList = targetBookmarkItem.closest('.bookmark-list');
-        const targetListSectionType = targetList.dataset.sectionType || targetList.closest('.content-section').id.replace('content-', '');
-         if (targetListSectionType === draggedItemType) { // Can only reorder within same type section
-            validTargetFound = true;
-            targetBookmarkItem.classList.add('drag-over');
-         }
+    const targetItem = e.target.closest('.bookmark-item');
+    // Only allow dropping on another bookmark item within the same list for reordering
+    if (targetItem && targetItem !== draggedItem && targetItem.parentElement === draggedItem.parentElement) {
+      Array.from(draggedItem.parentElement.children).forEach(child => {
+        if (child.classList.contains('bookmark-item')) child.classList.remove('drag-over');
+      });
+      targetItem.classList.add('drag-over');
+    } else {
+      // Clear drag-over from other items if not a valid reorder target
+      document.querySelectorAll('.bookmark-item.drag-over').forEach(el => el.classList.remove('drag-over'));
     }
-
-    // Check if over a folder item
-    const targetFolderItem = e.target.closest('.folder-item');
-    if (targetFolderItem) {
-        const folderSectionType = targetFolderItem.closest('.content-section').id.replace('content-', '');
-        if (folderSectionType === draggedItemType) { // Type compatibility check
-            validTargetFound = true;
-            targetFolderItem.classList.add('drag-over');
-        }
-    }
-
-    // Check if over a root bookmark list (but not over a specific item in it)
-    const targetRootList = e.target.closest('.bookmark-list:not(.nested-bookmark-list)');
-    if (targetRootList && !targetBookmarkItem && !targetFolderItem) { // Ensure not also over an item or folder
-        const rootListSectionType = targetRootList.dataset.sectionType || targetRootList.closest('.content-section').id.replace('content-', '');
-        if (rootListSectionType === draggedItemType) {
-            validTargetFound = true;
-            // Visual cue for list itself can be added if desired, e.g. targetRootList.classList.add('drag-over-list');
-        }
-    }
-
-    // Clear previous drag-over highlights if not on a valid target anymore
-    document.querySelectorAll('.bookmark-item.drag-over, .folder-item.drag-over').forEach(el => {
-        if (el !== targetBookmarkItem && el !== targetFolderItem) {
-            el.classList.remove('drag-over');
-        }
-    });
   }
 
   function handleDragLeave(e) {
-    const el = e.target.closest('.bookmark-item, .folder-item');
+    const el = e.target.closest('.bookmark-item');
     if (el) {
       el.classList.remove('drag-over');
     }
@@ -120,111 +86,106 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleDrop(e) {
     if (!dragDropEnabled || !draggedItem) return;
     e.preventDefault();
-    document.querySelectorAll('.bookmark-item.drag-over, .folder-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.bookmark-item.drag-over').forEach(el => el.classList.remove('drag-over'));
 
-    const draggedItemId = e.dataTransfer.getData('text/plain');
-    const draggedItemType = e.dataTransfer.getData('text/type');
-    // const sourceFolderId = e.dataTransfer.getData('text/sourcefolder');
+    const targetItem = e.target.closest('.bookmark-item');
+    const targetList = e.target.closest('.bookmark-list');
 
-    const targetFolderItem = e.target.closest('.folder-item');
-    const targetBookmarkItem = e.target.closest('.bookmark-item');
-    const targetList = e.target.closest('.bookmark-list'); // Could be root or nested
+    if (targetList && targetItem && targetItem !== draggedItem && targetItem.parentElement === draggedItem.parentElement) {
+      // Reordering within the same list
+      const listElement = targetItem.parentElement;
+      const children = Array.from(listElement.children).filter(child => child.classList.contains('bookmark-item'));
+      const draggedIndex = children.indexOf(draggedItem);
+      const targetIndex = children.indexOf(targetItem);
 
-    if (targetFolderItem) {
-        const targetFolderId = targetFolderItem.dataset.id;
-        const folderSectionType = targetFolderItem.closest('.content-section').id.replace('content-', '');
-        if (draggedItemType === folderSectionType) {
-            updateBookmarkFolder(draggedItemId, targetFolderId);
-        } else { console.warn("Cannot move bookmark to a folder of a different section type."); }
-    } else if (targetList && !targetBookmarkItem) { // Dropped on a list area, not an item
-        const isRootList = !targetList.classList.contains('nested-bookmark-list');
-        const listSectionType = targetList.dataset.sectionType || targetList.closest('.content-section').id.replace('content-', '');
-        if (isRootList && draggedItemType === listSectionType) {
-            updateBookmarkFolder(draggedItemId, 'root');
-        } else if (!isRootList && draggedItemType === listSectionType) { // Dropped on nested list area
-            const parentFolderId = targetList.closest('.folder-item')?.dataset.id;
-            if (parentFolderId) updateBookmarkFolder(draggedItemId, parentFolderId);
-        } else { console.warn("Drop on list area failed type or hierarchy check.");}
-    } else if (targetBookmarkItem && targetBookmarkItem !== draggedItem) { // Dropped on another bookmark for reordering
-        const listElement = targetBookmarkItem.closest('.bookmark-list');
-        if (listElement) { // Ensure it's a valid list
-            // Reordering logic: ensure items are in the same folder/root context
-            const draggedItemFolderId = draggedItem.closest('.folder-item')?.dataset.id || 'root';
-            const targetItemFolderId = targetBookmarkItem.closest('.folder-item')?.dataset.id || 'root';
-            if (draggedItemFolderId === targetItemFolderId) {
-                 const children = Array.from(listElement.children).filter(child => child.classList.contains('bookmark-item'));
-                 const draggedIndex = children.indexOf(draggedItem);
-                 const targetIndex = children.indexOf(targetBookmarkItem);
-                 if (draggedIndex < targetIndex) {
-                    listElement.insertBefore(draggedItem, targetBookmarkItem.nextSibling);
-                 } else {
-                    listElement.insertBefore(draggedItem, targetBookmarkItem);
-                 }
-                 updateStoredOrder(listElement, targetItemFolderId); // Pass folderId for context
-            } else { console.warn("Cannot reorder items from different folders/root directly.");}
-        }
+      if (draggedIndex < targetIndex) {
+        listElement.insertBefore(draggedItem, targetItem.nextSibling);
+      } else {
+        listElement.insertBefore(draggedItem, targetItem);
+      }
+      updateStoredOrder(listElement); // Simplified updateStoredOrder
+    } else if (targetList && !targetItem && targetList === draggedItem.parentElement) {
+      // Dropped on the list itself (empty area) - append to end
+      targetList.appendChild(draggedItem);
+      updateStoredOrder(targetList); // Simplified updateStoredOrder
     }
-    draggedItem = null; // Clean up
-  }
-
-  function updateBookmarkFolder(bookmarkId, newFolderId) {
-    chrome.storage.local.get({ bookmarks: [] }, function(data) {
-        let bookmarks = data.bookmarks;
-        const bookmarkIndex = bookmarks.findIndex(bm => bm.id === bookmarkId);
-        if (bookmarkIndex !== -1) {
-            bookmarks[bookmarkIndex].folderId = newFolderId;
-            chrome.storage.local.set({ bookmarks: bookmarks }, function() {
-                if (chrome.runtime.lastError) console.error("Error updating bookmark folderId:", chrome.runtime.lastError);
-                // else console.log("Bookmark folderId updated"); // Handled by storage.onChanged
-            });
-        }
-    });
+    // Dropping on folders or changing folderId is removed.
+    draggedItem = null;
   }
 
   function handleDragEnd(e) {
-    if (draggedItem) { // Check if draggedItem was set (i.e., dragstart was successful)
+    if (draggedItem) {
       draggedItem.classList.remove('dragging');
     }
-    document.querySelectorAll('.bookmark-item.drag-over, .folder-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.bookmark-item.drag-over').forEach(el => el.classList.remove('drag-over'));
     draggedItem = null;
-    originalBookmarksOrder = []; // Clear this as it's specific to a drag operation context
+    originalBookmarksOrder = [];
   }
 
-  // Function to update chrome.storage.local with new order from a list
-  // Now takes folderId to correctly re-order a subset of bookmarks
-  function updateStoredOrder(listElement, folderContextId = 'root') {
+  // Simplified function to update chrome.storage.local with new order from a list
+  function updateStoredOrder(listElement) {
     const newOrderedIdsInList = Array.from(listElement.children)
-                                .filter(item => item.classList.contains('bookmark-item')) // Ensure only bookmark items
+                                .filter(item => item.classList.contains('bookmark-item'))
                                 .map(item => item.dataset.id)
                                 .filter(id => id);
 
     chrome.storage.local.get({ bookmarks: [] }, function(data) {
       let allBookmarks = data.bookmarks;
-      // Separate bookmarks in the current context (folder or root) from others
-      const bookmarksInContext = allBookmarks.filter(bm => (bm.folderId === folderContextId || (folderContextId === 'root' && (bm.folderId === 'root' || typeof bm.folderId === 'undefined' || bm.folderId === null))));
-      const bookmarksNotInContext = allBookmarks.filter(bm => !(bm.folderId === folderContextId || (folderContextId === 'root' && (bm.folderId === 'root' || typeof bm.folderId === 'undefined' || bm.folderId === null))));
+      const bookmarkMap = new Map(allBookmarks.map(bm => [bm.id, bm]));
+      let reorderedBookmarks = [];
+      let usedIds = new Set();
 
-      // Create a map for easy lookup of bookmarks in the current context
-      const contextBookmarkMap = new Map(bookmarksInContext.map(bm => [bm.id, bm]));
-
-      // Build the reordered list for the current context
-      let reorderedContextBookmarks = [];
       newOrderedIdsInList.forEach(id => {
-        if (contextBookmarkMap.has(id)) {
-          reorderedContextBookmarks.push(contextBookmarkMap.get(id));
+        if (bookmarkMap.has(id)) {
+          reorderedBookmarks.push(bookmarkMap.get(id));
+          usedIds.add(id);
         }
       });
 
-      // Combine with bookmarks not in the current context
-      // The order of bookmarksNotInContext relative to each other is preserved.
-      // The reorderedContextBookmarks are effectively moved together as a block.
-      const finalBookmarks = [...bookmarksNotInContext, ...reorderedContextBookmarks];
+      // Add any bookmarks not in this specific list (e.g., from other sections)
+      // This part might need refinement if lists are section-specific and not global
+      allBookmarks.forEach(bm => {
+        if (!usedIds.has(bm.id)) {
+          reorderedBookmarks.push(bm);
+        }
+      });
+
+      // A more robust way for section-specific reordering:
+      // We assume `listElement` belongs to a specific section.
+      // So, we only reorder items of that section.
+      const sectionType = listElement.dataset.sectionType || listElement.closest('.content-section').id.replace('content-', '');
+
+      const bookmarksOfSection = allBookmarks.filter(bm => {
+          if (sectionType === 'videos') return bm.type === 'youtube_video';
+          if (sectionType === 'channels') return bm.type === 'youtube_channel';
+          return bm.type === sectionType;
+      });
+      const otherBookmarks = allBookmarks.filter(bm => {
+          if (sectionType === 'videos') return bm.type !== 'youtube_video';
+          if (sectionType === 'channels') return bm.type !== 'youtube_channel';
+          return bm.type !== sectionType;
+      });
+
+      const sectionMap = new Map(bookmarksOfSection.map(bm => [bm.id, bm]));
+      let reorderedSectionBookmarks = [];
+      newOrderedIdsInList.forEach(id => {
+          if(sectionMap.has(id)){
+              reorderedSectionBookmarks.push(sectionMap.get(id));
+              sectionMap.delete(id); // Remove from map to handle items not in listElement
+          }
+      });
+      // Add back any items from this section that were not in listElement (should not happen if list is complete)
+      sectionMap.forEach(bm => reorderedSectionBookmarks.push(bm));
+
+
+      const finalBookmarks = [...otherBookmarks, ...reorderedSectionBookmarks];
+
 
       chrome.storage.local.set({ bookmarks: finalBookmarks }, function() {
         if (chrome.runtime.lastError) {
           console.error("Error updating bookmark order:", chrome.runtime.lastError);
         } else {
-          console.log("Bookmark order updated successfully for context:", folderContextId);
+          console.log("Bookmark order updated successfully for section:", sectionType);
         }
       });
     });
@@ -232,10 +193,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to create a bookmark list item element
   function createBookmarkElement(bookmark) {
-    const item = document.createElement('li');
     item.classList.add('bookmark-item');
     item.setAttribute('data-id', bookmark.id);
-    item.setAttribute('data-type', bookmark.type); // Added data-type attribute
+    item.setAttribute('data-type', bookmark.type);
+    // Removed folderId related attributes or logic from here
 
     let imageAreaContent = '';
     let displayImageUrl = bookmark.thumbnailUrl || bookmark.faviconUrl;
@@ -280,132 +241,94 @@ document.addEventListener('DOMContentLoaded', function() {
     return item;
   }
 
-  // --- FOLDER CREATION ---
-  function createNewFolder(name, sectionType) {
-    chrome.storage.local.get({ folders: [] }, function(data) {
-      const newFolder = {
-        id: 'folder_' + new Date().getTime(),
-        name: name,
-        section: sectionType,
-        parentId: null, // Top-level folder for now
-        created_date: new Date().toISOString()
-      };
-      data.folders.push(newFolder);
-      chrome.storage.local.set({ folders: data.folders }, function() {
-        if (chrome.runtime.lastError) {
-          console.error("Error saving new folder:", chrome.runtime.lastError);
-        } else {
-          console.log("New folder created:", newFolder);
-          // Re-rendering will be handled by storage.onChanged listener
-        }
-      });
+  // --- SORTING UTILITY FUNCTIONS ---
+  function sortBookmarksByDate(bookmarks, ascending = true) {
+    if (!Array.isArray(bookmarks)) return [];
+    return [...bookmarks].sort((a, b) => {
+      const dateA = new Date(a.added_date);
+      const dateB = new Date(b.added_date);
+      return ascending ? dateA - dateB : dateB - dateA;
     });
   }
 
-  document.querySelectorAll('.create-folder-btn').forEach(button => {
-    button.addEventListener('click', function() {
-      const sectionType = this.dataset.sectionType;
-      const folderName = prompt(`Enter name for new folder in ${sectionType}:`);
-      if (folderName && folderName.trim() !== "") {
-        createNewFolder(folderName.trim(), sectionType);
+  function sortBookmarksByTitle(bookmarks, ascending = true) {
+    if (!Array.isArray(bookmarks)) return [];
+    return [...bookmarks].sort((a, b) => {
+      const titleA = a.title ? String(a.title).toLowerCase() : '';
+      const titleB = b.title ? String(b.title).toLowerCase() : '';
+      if (titleA < titleB) return ascending ? -1 : 1;
+      if (titleA > titleB) return ascending ? 1 : -1;
+      return 0;
+    });
+  }
+
+  const defaultSort = { by: 'date', order: 'desc' };
+
+  function updateSortButtonActiveState(sectionId, sortBy, sortOrder) {
+    const sortButtonContainer = document.querySelector(`#content-${sectionId} .sort-options`);
+    if (!sortButtonContainer) return;
+
+    sortButtonContainer.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.remove('active-sort');
+      if (btn.dataset.sortBy === sortBy && btn.dataset.sortOrder === sortOrder) {
+        btn.classList.add('active-sort');
       }
     });
-  });
+  }
 
-  // Function to render folders and bookmarks for the active section
-  function renderActiveSectionContent(activeTargetId, allBookmarks, allFolders) {
+  // Simplified rendering function for a specific list
+  function populateBookmarkList(listElement, bookmarksToRender, sectionId) {
+    if (!listElement) return;
+    listElement.innerHTML = ''; // Clear previous items
+    if (bookmarksToRender.length === 0) {
+      listElement.innerHTML = `<li class="empty-list-placeholder">No ${sectionId} bookmarked yet.</li>`;
+    } else {
+      bookmarksToRender.forEach(bookmark => {
+        const bookmarkElement = createBookmarkElement(bookmark);
+        listElement.appendChild(bookmarkElement);
+      });
+    }
+  }
+
+  // Main function to load, sort, and render bookmarks for the active section
+  function loadSortAndRenderActiveSection() {
+    const activeLink = document.querySelector('.sidebar a.active');
+    const activeTargetId = activeLink ? activeLink.dataset.target : 'videos'; // Default section
+
     const sectionMapping = {
-      'videos': { bookmarkList: youtubeVideosList, folderList: videosFoldersList, type: 'youtube_video' },
-      'channels': { bookmarkList: youtubeChannelsList, folderList: channelsFoldersList, type: 'youtube_channel' },
-      'websites': { bookmarkList: websitesList, folderList: websitesFoldersList, type: 'website' },
-      'webpages': { bookmarkList: webpagesList, folderList: webpagesFoldersList, type: 'page' },
-      'selections': { bookmarkList: selectionsList, folderList: selectionsFoldersList, type: 'selection' }
+      'videos': { listElement: youtubeVideosList, type: 'youtube_video' },
+      'channels': { listElement: youtubeChannelsList, type: 'youtube_channel' },
+      'websites': { listElement: websitesList, type: 'website' },
+      'webpages': { listElement: webpagesList, type: 'page' },
+      'selections': { listElement: selectionsList, type: 'selection' }
     };
 
-    // Clear all lists first (bookmarks and folders)
-    Object.values(sectionMapping).forEach(mapping => {
-      if(mapping.bookmarkList) mapping.bookmarkList.innerHTML = '';
-      if(mapping.folderList) mapping.folderList.innerHTML = '';
-    });
+    if (!sectionMapping[activeTargetId]) return; // Should not happen if activeTargetId is valid
 
-    const currentSectionMap = sectionMapping[activeTargetId];
-    if (!currentSectionMap) {
-      console.warn("No mapping found for section:", activeTargetId);
-      return;
-    }
+    chrome.storage.local.get({ bookmarks: [], sortPreferences: {} }, function(data) {
+      const allBookmarks = data.bookmarks;
+      const sortPreferences = data.sortPreferences;
 
-    // Render Folders for the active section
-    const sectionFolders = allFolders.filter(folder => folder.section === activeTargetId && (folder.parentId === null || folder.parentId === 'root')); // Assuming top-level for now
-    if (currentSectionMap.folderList) {
-      if (sectionFolders.length === 0) {
-        currentSectionMap.folderList.innerHTML = '<li class="empty-list-placeholder">No folders yet.</li>';
-      } else {
-        sectionFolders.forEach(folder => {
-          const folderItem = document.createElement('li');
-          folderItem.classList.add('folder-item');
-          folderItem.setAttribute('data-id', folder.id);
-          folderItem.setAttribute('data-section-type', folder.section); // Store section type on folder for D&D checks
-          folderItem.textContent = escapeHTML(folder.name);
+      const currentSort = sortPreferences[activeTargetId] || defaultSort;
 
-          const nestedUl = document.createElement('ul');
-          nestedUl.classList.add('bookmark-list', 'nested-bookmark-list');
-          nestedUl.setAttribute('data-folder-id', folder.id); // For identifying this list later
-          nestedUl.setAttribute('data-section-type', folder.section);
+      let sectionBookmarks = allBookmarks.filter(bm => {
+        if (activeTargetId === 'videos') return bm.type === 'youtube_video';
+        if (activeTargetId === 'channels') return bm.type === 'youtube_channel';
+        return bm.type === activeTargetId;
+      });
 
-
-          const bookmarksInFolder = allBookmarks.filter(bm => bm.folderId === folder.id && bm.type === currentSectionMap.type);
-          if (bookmarksInFolder.length === 0) {
-            // Optional: placeholder for empty folder
-            // const emptyMsg = document.createElement('li');
-            // emptyMsg.classList.add('empty-list-placeholder', 'empty-folder-placeholder');
-            // emptyMsg.textContent = 'Folder is empty.';
-            // nestedUl.appendChild(emptyMsg);
-          } else {
-            bookmarksInFolder.forEach(bookmark => {
-              const bookmarkElement = createBookmarkElement(bookmark);
-              nestedUl.appendChild(bookmarkElement);
-            });
-          }
-          folderItem.appendChild(nestedUl); // Add nested list to folder item
-          currentSectionMap.folderList.appendChild(folderItem);
-        });
+      if (currentSort.by === 'date') {
+        sectionBookmarks = sortBookmarksByDate(sectionBookmarks, currentSort.order === 'asc');
+      } else if (currentSort.by === 'title') {
+        sectionBookmarks = sortBookmarksByTitle(sectionBookmarks, currentSort.order === 'asc');
       }
-    }
 
-    // Render Root Bookmarks for the active section
-    const rootBookmarks = allBookmarks.filter(bookmark =>
-      (bookmark.type === currentSectionMap.type || (activeTargetId === 'webpages' && bookmark.type === 'page')) &&
-      (bookmark.folderId === 'root' || typeof bookmark.folderId === 'undefined' || bookmark.folderId === null)
-    );
+      populateBookmarkList(sectionMapping[activeTargetId].listElement, sectionBookmarks, activeTargetId);
+      updateSortButtonActiveState(activeTargetId, currentSort.by, currentSort.order);
 
-    if (currentSectionMap.bookmarkList) { // This is the root bookmark list for the section
-      currentSectionMap.bookmarkList.setAttribute('data-section-type', activeTargetId); // For D&D checks
-      if (rootBookmarks.length === 0 && sectionFolders.length === 0) { // Only show if no folders either
-        currentSectionMap.bookmarkList.innerHTML = `<li class="empty-list-placeholder">No ${activeTargetId} bookmarked here yet.</li>`;
-      } else if (rootBookmarks.length === 0 && sectionFolders.length > 0) {
-        // If there are folders, don't show "no bookmarks here yet" in the root list if it's empty.
-        // It might be confusing. Or, have a different message like "No items at root."
-         currentSectionMap.bookmarkList.innerHTML = ''; // Clear any placeholder if folders exist
-      }
-      else {
-        rootBookmarks.forEach(bookmark => {
-          const bookmarkElement = createBookmarkElement(bookmark);
-          currentSectionMap.bookmarkList.appendChild(bookmarkElement);
-        });
-      }
-    }
-    
-    updateDraggableState(dragDropEnabled); 
-    addListEventListeners(); 
-  }
-
-  // Load data and render content for the currently active section
-  function loadAndRenderActiveSectionData() {
-    const activeLink = document.querySelector('.sidebar a.active');
-    const activeTargetId = activeLink ? activeLink.dataset.target : 'videos'; // Default to 'videos' if none active
-
-    chrome.storage.local.get({ bookmarks: [], folders: [] }, function(data) {
-      renderActiveSectionContent(activeTargetId, data.bookmarks, data.folders);
+      // Ensure D&D state is applied after rendering
+      updateDraggableState(dragDropEnabled);
+      addListEventListeners(); // Re-attach D&D listeners to the newly rendered items
     });
   }
   
@@ -487,8 +410,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Renamed and expanded function (Modified)
   function addListEventListeners() {
-    // This function should remain targeted at bookmark lists for now.
-    // Folder interactions (like click to open) will be separate.
     const bookmarkLists = [webpagesList, websitesList, youtubeVideosList, youtubeChannelsList, selectionsList];
     bookmarkLists.forEach(list => {
       if (!list) return;
@@ -563,21 +484,29 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     // Persist the last active tab to local storage
-    chrome.storage.local.set({ lastActiveOptionsTab: targetId });
+    chrome.storage.local.set({ lastActiveOptionsTab: targetId }, function() {
+      // After setting the active tab and updating UI classes, load/sort/render its content
+      loadSortAndRenderActiveSection();
+    });
   }
 
   sidebarLinks.forEach(link => {
     link.addEventListener('click', function(event) {
       event.preventDefault();
       const target = this.dataset.target;
-      setActiveContent(target);
+      setActiveContent(target); // This will now also trigger re-render for the new section
     });
   });
 
   // Initial load & State Restoration
-  loadAndRenderActiveSectionData(); // Renamed function call
+  // The D&D toggle might not be in the DOM yet if it's moved by HTML changes.
+  // Query for it here, after potential HTML modification.
+  // This will be done after HTML is modified. For now, ensure logic is sound.
+  // dragDropToggle = document.getElementById('dragDropToggle');
+  // if (dragDropToggle) { ... }
 
-  // Restore last active tab or default to 'videos'
+
+  // Restore last active tab or default to 'videos'. This will also trigger the first render.
   chrome.storage.local.get({ lastActiveOptionsTab: 'videos' }, function(data) {
     // If the stored last active tab was 'websites', and it's now split,
     // defaulting to 'webpages' is a reasonable behavior.
@@ -613,12 +542,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Listener for changes in storage (bookmarks, settings, etc.)
   chrome.storage.onChanged.addListener(function(changes, namespace) {
-    if (namespace === 'local' && (changes.bookmarks || changes.folders)) {
-      console.log('Bookmarks or folders changed in storage, reloading active section.');
-      loadAndRenderActiveSectionData();
+    if (namespace === 'local' && (changes.bookmarks || changes.sortPreferences)) {
+      console.log('Bookmarks or sort preferences changed in storage, reloading active section.');
+      loadSortAndRenderActiveSection();
     }
-    // Theme and D&D settings changes are handled by their own listeners or direct updates.
+    // Handling D&D toggle change is done directly by its event listener.
   });
+
+  // Event listener for sort buttons (using event delegation)
+  const mainContentArea = document.querySelector('.main-content');
+  if (mainContentArea) {
+    mainContentArea.addEventListener('click', function(event) {
+      if (event.target.classList.contains('sort-btn')) {
+        const button = event.target;
+        const sortBy = button.dataset.sortBy;
+        const sortOrder = button.dataset.sortOrder;
+        const activeSectionDiv = button.closest('.content-section');
+        if (activeSectionDiv) {
+          const activeSectionId = activeSectionDiv.id.replace('content-', '');
+
+          chrome.storage.local.get({ sortPreferences: {} }, function(data) {
+            let prefs = data.sortPreferences;
+            prefs[activeSectionId] = { by: sortBy, order: sortOrder };
+            chrome.storage.local.set({ sortPreferences: prefs }, function() {
+              if(chrome.runtime.lastError) console.error("Error saving sort preference:", chrome.runtime.lastError);
+              // The storage.onChanged listener will handle re-rendering.
+            });
+          });
+        }
+      }
+    });
+  }
 
   const exportBtn = document.getElementById('exportBtn');
   const importFile = document.getElementById('importFile');
@@ -808,33 +762,4 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// --- UTILITY FUNCTIONS FOR SORTING ---
-function sortBookmarksByDate(bookmarks, ascending = true) {
-  if (!Array.isArray(bookmarks)) return [];
-  // Create a shallow copy to avoid modifying the original array if it's passed by reference from state
-  return [...bookmarks].sort((a, b) => {
-    const dateA = new Date(a.added_date);
-    const dateB = new Date(b.added_date);
-    if (ascending) {
-      return dateA - dateB;
-    } else {
-      return dateB - dateA;
-    }
-  });
-}
-
-function sortBookmarksByTitle(bookmarks, ascending = true) {
-  if (!Array.isArray(bookmarks)) return [];
-  // Create a shallow copy
-  return [...bookmarks].sort((a, b) => {
-    const titleA = a.title ? String(a.title).toLowerCase() : '';
-    const titleB = b.title ? String(b.title).toLowerCase() : '';
-    if (titleA < titleB) {
-      return ascending ? -1 : 1;
-    }
-    if (titleA > titleB) {
-      return ascending ? 1 : -1;
-    }
-    return 0;
-  });
-}
+// Sorting functions are removed as per instruction

@@ -177,81 +177,56 @@
     }
     /* Ensure settings section title is also adapted if needed */
     #content-settings .settings-section > h2 {
-         margin-top: 0; /* Already part of settings section, so no extra top margin */
+         margin-top: 0;
     }
 
-    .create-folder-btn {
-      padding: 8px 12px;
-      background-color: var(--theme-accent-primary);
-      color: var(--theme-button-text); /* Match text color for accents or choose contrasting */
-      border: 1px solid var(--theme-accent-primary);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      font-size: 0.9em;
-      margin-bottom: 15px; /* Space below button */
+    .section-controls {
+      display: flex;
+      justify-content: space-between; /* Pushes sort to left, D&D to right */
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      gap: 10px; /* Gap between sort options and D&D toggle if they wrap */
     }
-    .create-folder-btn:hover {
-      background-color: var(--theme-accent-secondary); /* Or a darker shade of accent */
-    }
-    body[data-theme="dark_mode"] .create-folder-btn {
-        color: var(--theme-bg-primary); /* Ensure contrast on dark theme */
-    }
-
-
-    .sub-heading {
+    .sort-options span {
+      margin-right: 8px;
       font-size: 0.9em;
       color: var(--theme-text-secondary);
-      margin-top: 20px; /* Increased space above sub-heading */
-      margin-bottom: 10px; /* Increased space below sub-heading */
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600; /* Slightly bolder */
-      border-bottom: 1px solid var(--theme-border-color); /* Optional: separator line */
-      padding-bottom: 5px; /* Padding for the separator line */
     }
-    .folder-list {
-      list-style-type: none;
-      padding: 0;
-      margin-bottom: 30px; /* More space after folder list */
-      display: grid; /* Using grid for folders as well */
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust minmax for folder items */
-      gap: 10px; /* Gap between folder items */
-    }
-    .folder-item {
+    .sort-btn {
+      padding: 5px 10px;
+      font-size: 0.85em;
       background-color: var(--theme-button-bg);
-      padding: 12px 15px; /* Increased padding */
-      /* margin-bottom: 8px; Removed as grid gap handles spacing */
-      border-radius: 6px;
-      cursor: pointer;
+      color: var(--theme-button-text);
       border: 1px solid var(--theme-border-color);
-      text-align: center; /* Center folder name */
-      font-weight: 500;
-      color: var(--theme-text-primary);
-      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: background-color 0.2s, border-color 0.2s;
     }
-    .folder-item:hover {
+    .sort-btn:hover {
       background-color: var(--theme-button-hover-bg);
-      box-shadow: 0 2px 4px var(--theme-shadow-color);
+      border-color: var(--theme-accent-primary);
     }
-    .folder-item.drag-over {
-      background-color: var(--theme-accent-secondary) !important; /* Use !important to override hover if necessary */
-      opacity: 0.8;
-      border-style: dashed;
-      border-color: var(--theme-text-primary); /* Make border more visible */
+    .sort-btn.active-sort {
+      background-color: var(--theme-accent-secondary);
+      color: #fff; /* Or var(--theme-button-bg) for better contrast on some themes */
+      border-color: var(--theme-accent-secondary);
     }
-    .nested-bookmark-list {
-      margin-top: 10px; /* Space between folder name and its bookmarks */
-      padding-left: 15px; /* Indent nested bookmarks slightly */
-      /* Nested lists will use the same .bookmark-list grid styles */
-    }
-    .empty-folder-placeholder { /* Optional: if you add placeholders to empty folders */
-        font-size: 0.9em;
-        color: var(--theme-text-secondary);
-        text-align: center;
-        padding: 10px;
+    /* Ensure D&D toggle (now in section-controls) aligns well */
+    .section-controls .setting-toggle {
+       /* margin-left: auto; /* Pushes D&D toggle to the far right if space allows */
+       /* Existing styles for .setting-toggle should largely work */
     }
 
+
+    /* REMOVED .create-folder-btn styles */
+    /* REMOVED .sub-heading styles */
+    /* REMOVED .folder-list styles */
+    /* REMOVED .folder-item styles */
+    /* REMOVED .folder-item.drag-over styles */
+    /* REMOVED .nested-bookmark-list styles */
+    /* REMOVED .empty-folder-placeholder styles */
 
     .bookmark-list {
       list-style-type: none;
@@ -538,70 +513,87 @@
 
       <div id="content-webpages" class="content-section">
         <h2 class="section-title">Webpages</h2>
-        <button class="create-folder-btn" data-section-type="webpages">Create Folder</button>
-        <div class="section-controls"></div>
-        <h3 class="sub-heading">Folders</h3>
-        <ul id="webpages-foldersList" class="folder-list"></ul>
-        <h3 class="sub-heading">My Webpages</h3>
+        <div class="section-controls">
+          <div class="sort-options">
+            <span>Sort: </span>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="desc">Date (Newest)</button>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="asc">Date (Oldest)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
+          </div>
+        </div>
         <ul id="webpagesList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-websites" class="content-section">
         <h2 class="section-title">Websites</h2>
-        <button class="create-folder-btn" data-section-type="websites">Create Folder</button>
-        <div class="section-controls"></div>
-        <h3 class="sub-heading">Folders</h3>
-        <ul id="websites-foldersList" class="folder-list"></ul>
-        <h3 class="sub-heading">My Websites</h3>
+        <div class="section-controls">
+          <div class="sort-options">
+            <span>Sort: </span>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="desc">Date (Newest)</button>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="asc">Date (Oldest)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
+          </div>
+        </div>
         <ul id="websitesList" class="bookmark-list"></ul>
       </div>
 
-      <div id="content-videos" class="content-section">
+      <div id="content-videos" class="content-section"> <!-- Default section, D&D toggle goes here -->
         <h2 class="section-title">YouTube Videos</h2>
-        <button class="create-folder-btn" data-section-type="videos">Create Folder</button>
-        <div class="section-controls"></div>
-        <h3 class="sub-heading">Folders</h3>
-        <ul id="videos-foldersList" class="folder-list"></ul>
-        <h3 class="sub-heading">My Videos</h3>
+        <div class="section-controls">
+          <div class="sort-options">
+            <span>Sort: </span>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="desc">Date (Newest)</button>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="asc">Date (Oldest)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
+          </div>
+          <div class="setting-toggle"> <!-- D&D Toggle Moved Here -->
+            <label for="dragDropToggle">Enable Drag &amp; Drop Reordering:</label>
+            <input type="checkbox" id="dragDropToggle">
+          </div>
+        </div>
         <ul id="youtubeVideosList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-channels" class="content-section">
         <h2 class="section-title">YouTube Channels</h2>
-        <button class="create-folder-btn" data-section-type="channels">Create Folder</button>
-        <div class="section-controls"></div>
-        <h3 class="sub-heading">Folders</h3>
-        <ul id="channels-foldersList" class="folder-list"></ul>
-        <h3 class="sub-heading">My Channels</h3>
+        <div class="section-controls">
+          <div class="sort-options">
+            <span>Sort: </span>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="desc">Date (Newest)</button>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="asc">Date (Oldest)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
+          </div>
+        </div>
         <ul id="youtubeChannelsList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-selections" class="content-section">
         <h2 class="section-title">Selections &amp; Notes</h2>
-        <button class="create-folder-btn" data-section-type="selections">Create Folder</button>
-        <div class="section-controls"></div>
-        <h3 class="sub-heading">Folders</h3>
-        <ul id="selections-foldersList" class="folder-list"></ul>
-        <h3 class="sub-heading">My Selections</h3>
+        <div class="section-controls">
+          <div class="sort-options">
+            <span>Sort: </span>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="desc">Date (Newest)</button>
+            <button class="sort-btn" data-sort-by="date" data-sort-order="asc">Date (Oldest)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
+            <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
+          </div>
+        </div>
         <ul id="selectionsList" class="bookmark-list"></ul>
       </div>
 
       <div id="content-settings" class="content-section">
-        <!-- Existing settings section will be moved here by JS logic in a real scenario,
-             but for direct HTML modification, we move it now.
-             The original .settings-section div is moved entirely. -->
         <div class="settings-section">
           <h2>Settings</h2>
-          <div class="controls">
+          <div class="controls"> <!-- Original controls div for import/export -->
             <button id="exportBtn">Export Bookmarks</button>
             <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
             <input type="file" id="importFile" accept=".json">
             <span id="importStatus"></span>
-
-            <div class="setting-toggle">
-              <label for="dragDropToggle">Enable Drag &amp; Drop Reordering:</label>
-              <input type="checkbox" id="dragDropToggle">
-            </div>
+            <!-- D&D Toggle REMOVED from here -->
           </div>
           <div class="theme-selector">
             <label for="themeSelect">Select Theme:</label>
