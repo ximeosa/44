@@ -180,45 +180,13 @@
          margin-top: 0;
     }
 
-    .section-controls {
-      display: flex;
-      justify-content: space-between; /* Pushes sort to left, D&D to right */
-      align-items: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap; /* Allow wrapping on smaller screens */
-      gap: 10px; /* Gap between sort options and D&D toggle if they wrap */
-    }
-    .sort-options span {
-      margin-right: 8px;
-      font-size: 0.9em;
-      color: var(--theme-text-secondary);
-    }
-    .sort-btn {
-      padding: 5px 10px;
-      font-size: 0.85em;
-      background-color: var(--theme-button-bg);
-      color: var(--theme-button-text);
-      border: 1px solid var(--theme-border-color);
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 5px;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-    .sort-btn:hover {
-      background-color: var(--theme-button-hover-bg);
-      border-color: var(--theme-accent-primary);
-    }
-    .sort-btn.active-sort {
-      background-color: var(--theme-accent-secondary);
-      color: #fff; /* Or var(--theme-button-bg) for better contrast on some themes */
-      border-color: var(--theme-accent-secondary);
-    }
-    /* Ensure D&D toggle (now in section-controls) aligns well */
-    .section-controls .setting-toggle {
-       /* margin-left: auto; /* Pushes D&D toggle to the far right if space allows */
-       /* Existing styles for .setting-toggle should largely work */
-    }
-
+    /* Styles for .section-controls and .sort-options are already present from previous attempt, verifying them */
+    /* .section-controls { ... } */
+    /* .sort-options span { ... } */
+    /* .sort-btn { ... } */
+    /* .sort-btn:hover { ... } */
+    /* .sort-btn.active-sort { ... } */
+    /* .section-controls .setting-toggle { ... } */
 
     /* REMOVED .create-folder-btn styles */
     /* REMOVED .sub-heading styles */
@@ -511,6 +479,9 @@
     <div class="main-content">
       <h1>My Bookmarks</h1> <!-- General title for the main content area -->
 
+    <div class="main-content">
+      <h1>My Bookmarks</h1> <!-- General title for the main content area -->
+
       <div id="content-webpages" class="content-section">
         <h2 class="section-title">Webpages</h2>
         <div class="section-controls">
@@ -521,6 +492,7 @@
             <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
             <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
           </div>
+          <!-- D&D Toggle will not be here -->
         </div>
         <ul id="webpagesList" class="bookmark-list"></ul>
       </div>
@@ -535,6 +507,7 @@
             <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
             <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
           </div>
+          <!-- D&D Toggle will not be here -->
         </div>
         <ul id="websitesList" class="bookmark-list"></ul>
       </div>
@@ -549,7 +522,7 @@
             <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
             <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
           </div>
-          <div class="setting-toggle"> <!-- D&D Toggle Moved Here -->
+          <div class="setting-toggle"> <!-- D&D Toggle IS Here -->
             <label for="dragDropToggle">Enable Drag &amp; Drop Reordering:</label>
             <input type="checkbox" id="dragDropToggle">
           </div>
@@ -567,6 +540,7 @@
             <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
             <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
           </div>
+          <!-- D&D Toggle will not be here -->
         </div>
         <ul id="youtubeChannelsList" class="bookmark-list"></ul>
       </div>
@@ -581,6 +555,7 @@
             <button class="sort-btn" data-sort-by="title" data-sort-order="asc">Title (A-Z)</button>
             <button class="sort-btn" data-sort-by="title" data-sort-order="desc">Title (Z-A)</button>
           </div>
+          <!-- D&D Toggle will not be here -->
         </div>
         <ul id="selectionsList" class="bookmark-list"></ul>
       </div>
@@ -588,12 +563,12 @@
       <div id="content-settings" class="content-section">
         <div class="settings-section">
           <h2>Settings</h2>
-          <div class="controls"> <!-- Original controls div for import/export -->
+          <div class="controls">
             <button id="exportBtn">Export Bookmarks</button>
             <label for="importFile" id="importFileLabel">Import Bookmarks:</label>
             <input type="file" id="importFile" accept=".json">
             <span id="importStatus"></span>
-            <!-- D&D Toggle REMOVED from here -->
+            <!-- D&D Toggle is REMOVED from here -->
           </div>
           <div class="theme-selector">
             <label for="themeSelect">Select Theme:</label>

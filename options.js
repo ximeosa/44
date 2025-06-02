@@ -9,12 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const sidebarLinks = document.querySelectorAll('.sidebar a');
   const contentSections = document.querySelectorAll('.main-content .content-section');
   const mainContentTitle = document.querySelector('.main-content > h1');
+  const sidebarLinks = document.querySelectorAll('.sidebar a');
+  const contentSections = document.querySelectorAll('.main-content .content-section');
+  const mainContentTitle = document.querySelector('.main-content > h1');
   const sidebar = document.querySelector('.sidebar');
   const optionsContainer = document.querySelector('.options-container');
 
-  // D&D Toggle will be queried after HTML modification ensures it's in its new place.
-  // let dragDropToggle = document.getElementById('dragDropToggle');
-  let dragDropToggle; // To be assigned in DOMContentLoaded after HTML is ready
+  let dragDropToggle = document.getElementById('dragDropToggle'); // Initial attempt to get it
 
   let dragDropEnabled = false;
   let draggedItem = null;
@@ -502,8 +503,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // The D&D toggle might not be in the DOM yet if it's moved by HTML changes.
   // Query for it here, after potential HTML modification.
   // This will be done after HTML is modified. For now, ensure logic is sound.
-  // dragDropToggle = document.getElementById('dragDropToggle');
-  // if (dragDropToggle) { ... }
+  // dragDropToggle = document.getElementById('dragDropToggle');  // Moved to after DOMContentLoaded
+  // if (dragDropToggle) { ... } // Moved to after DOMContentLoaded
 
 
   // Restore last active tab or default to 'videos'. This will also trigger the first render.
@@ -572,6 +573,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     });
+  }
+
+  // Initialize D&D Toggle after DOM is loaded and HTML modifications are complete
+  // This was previously outside/before this logic, but moved here
+  // to ensure it's found after HTML is potentially modified by earlier steps.
+  dragDropToggle = document.getElementById('dragDropToggle');
+  if (dragDropToggle) {
+    dragDropToggle.addEventListener('change', function() {
+      dragDropEnabled = this.checked;
+      updateDraggableState(dragDropEnabled);
+      chrome.storage.local.set({ dragDropEnabledSetting: dragDropEnabled });
+    });
+
+    // Load and apply saved D&D enabled state
+    chrome.storage.local.get({ dragDropEnabledSetting: false }, function(data) {
+      if (dragDropToggle) { // Check again as it's an async callback
+        dragDropEnabled = data.dragDropEnabledSetting;
+        dragDropToggle.checked = dragDropEnabled;
+        updateDraggableState(dragDropEnabled); // Apply initial state after loading
+      }
+    });
+  } else {
+    console.error("#dragDropToggle input element not found in the DOM! D&D toggle functionality will be unavailable.");
   }
 
   const exportBtn = document.getElementById('exportBtn');
